@@ -1,0 +1,60 @@
+[info] loading data/processed/songs.csv ...
+[info] 244 songs
+[info] 244 songs have section-tagged lyrics
+
+============================================================
+PHASE A — rule-based (VADER + TextBlob)
+============================================================
+  [ 25/244] Forever & Always                          vader=-0.974  tb=+0.022
+  [ 50/244] Innocent                                  vader=+0.979  tb=+0.249
+  [ 75/244] Starlight                                 vader=+0.997  tb=+0.219
+  [100/244] This Love                                 vader=+0.999  tb=+0.202
+  [125/244] Call It What You Want                     vader=+0.998  tb=+0.166
+  [150/244] No Body, No Crime                         vader=-0.383  tb=+0.255
+  [175/244] Betty                                     vader=+0.957  tb=-0.141
+  [200/244] Fortnight                                 vader=+0.788  tb=+0.315
+  [225/244] The Prophecy                              vader=+0.992  tb=+0.162
+  [244/244] Only The Young                            vader=-0.979  tb=+0.017
+
+[ok] wrote 244 rows to reports/sentiment_per_song.csv
+[ok] wrote 717 rows to reports/sentiment_per_section.csv
+
+============================================================
+PHASE B — BERT (distilbert-sst2, positive/negative)
+============================================================
+[info] loading model (downloads ~250 MB on first run) ...
+Loading weights:   0%|          | 0/104 [00:00<?, ?it/s]Loading weights: 100%|██████████| 104/104 [00:00<00:00, 16466.88it/s]
+[ok] loaded in 24.2s, device=cpu
+  [ 25/244] Forever & Always                          bert_pos=0.007
+  [ 50/244] Innocent                                  bert_pos=0.833
+  [ 75/244] Starlight                                 bert_pos=0.998
+  [100/244] This Love                                 bert_pos=0.970
+  [125/244] Call It What You Want                     bert_pos=0.990
+  [150/244] No Body, No Crime                         bert_pos=0.007
+  [175/244] Betty                                     bert_pos=0.001
+  [200/244] Fortnight                                 bert_pos=0.011
+  [225/244] The Prophecy                              bert_pos=0.002
+  [244/244] Only The Young                            bert_pos=0.730
+
+[ok] updated reports/sentiment_per_song.csv with BERT columns
+
+============================================================
+PHASE C — RoBERTa emotion (7-way classifier)
+============================================================
+[info] loading model (downloads ~250 MB on first run) ...
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 35362.29it/s]
+[ok] loaded in 30.2s, device=cpu
+  [ 25/244] Forever & Always                          top=surprise(0.067)
+  [ 50/244] Innocent                                  top=surprise(0.166)
+  [ 75/244] Starlight                                 top=surprise(0.408)
+  [100/244] This Love                                 top=surprise(0.227)
+  [125/244] Call It What You Want                     top=surprise(0.037)
+  [150/244] No Body, No Crime                         top=surprise(0.072)
+  [175/244] Betty                                     top=surprise(0.125)
+  [200/244] Fortnight                                 top=surprise(0.028)
+  [225/244] The Prophecy                              top=surprise(0.060)
+  [244/244] Only The Young                            top=surprise(0.042)
+
+[ok] updated reports/sentiment_per_song.csv with emotion columns
+
+[done] all phases complete
