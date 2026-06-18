@@ -220,7 +220,11 @@ def main() -> int:
     for a in centroids:
         c = centroids[a]
         centroids[a] = c / np.linalg.norm(c)
-    album_names = sorted(centroids.keys(), key=lambda a: song_records[by_album[a][0]]["Year"] or 9999)
+    def year_key(a):
+        y = song_records[by_album[a][0]]["Year"]
+        try: return int(y)
+        except (ValueError, TypeError): return 9999
+    album_names = sorted(centroids.keys(), key=year_key)
     pairs = []
     for i, a in enumerate(album_names):
         for b in album_names[i+1:]:
