@@ -224,6 +224,45 @@ def main() -> int:
         w.writerows(per_song_rows)
     print(f"\n[ok] updated {out_a.relative_to(REPO_ROOT)} with BERT columns")
 
+    # also score each section with BERT so per-section analysis (verse vs chorus,
+    # verse->chorus jump) has the same neural signal we trust at the song level.
+    print("\n[info] scoring each section with DistilBERT (per-section) ...")
+    # index section rows by (song_idx, section_name) so we can find them later
+    sec_index: dict[tuple[int, str], dict] = {}
+    for i, s in enumerate(songs):
+        key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"
+        lines = lyrics_for_song(key, lyrics_by_song)
+        for section in SECTION_GROUPS:
+            sec_text = section_text(lines, section)
+            if not sec_text:
+                continue
+            for sr in per_section_rows:
+                if sr["AlbumCode"] == s["AlbumCode"] and sr["TrackNumber"] == s["TrackNumber"] \
+                   and sr["Title"] == s["Title"] and sr["Section"] == section:
+                    sec_index[(i, section)] = sr
+                    break
+
+    for i, s in enumerate(songs):
+        key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"
+        lines = lyrics_for_song(key, lyrics_by_song)
+        for section in SECTION_GROUPS:
+            sec_text = section_text(lines, section)
+            if not sec_text:
+                continue
+            sec_row = sec_index.get((i, section))
+            if sec_row is None:
+                continue
+            sec_row.update(compute_bert(sec_text, bert_tok, bert_mod, device))
+        if (i + 1) % 25 == 0 or i + 1 == len(songs):
+            print(f"  [{i+1:>3}/{len(songs)}] sections scored")
+
+    # rewrite the per_section csv with bert columns added
+    with out_s.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(per_section_rows[0].keys()))
+        w.writeheader()
+        w.writerows(per_section_rows)
+    print(f"[ok] updated {out_s.relative_to(REPO_ROOT)} with BERT columns")
+
     # free BERT
     del bert_tok, bert_mod
     gc.collect()
