@@ -1,92 +1,119 @@
 # Taylor Swift's Songs — NLP Analysis
 
-A natural-language analysis of Taylor Swift's lyrics, exploring word usage, sentiment, and emotion across her discography. The notebook walks through cleaning, POS tagging, word frequency, and three different sentiment methods (TextBlob, VADER, BERT) plus emotion detection with a RoBERTa model.
+A natural-language analysis of Taylor Swift's lyrics across all 13 studio
+albums, exploring word usage, sentiment, emotion, and lyrical structure
+across her discography. Built on the [Corpus of Taylor Swift (CoTS)
+v1.4](https://github.com/sagesolar/Corpus-of-Taylor-Swift).
 
 ## What's in this repo
 
-| File | Description |
+| File / Dir | Description |
 |---|---|
-| `final_lyrics_with_year.csv` | 199 songs, one per row. Columns: `Song`, `Lyrics`, `Year`. Lyrics are raw — they include section markers like `[Verse 1]`, `[Chorus]`, and embedded newlines. |
-| `Swift_NLP_2025.ipynb` | The analysis notebook. Designed for Google Colab but works in any Jupyter environment. |
-| `LICENSE` | MIT. |
-
-The dataset is a fork of [this open Kaggle dataset](https://www.kaggle.com/datasets/tksmax/taylorswiftlyrics/data), with one column added: the year of release. For songs that were re-released (Taylor's Version albums), the newer release year is used.
+| `data/fetch_cots.py` | Downloads the CoTS files from upstream into `data/raw/cots/` (gitignored). |
+| `data/build_pipeline.py` | Reads CoTS + `data/album_to_era.json`, produces the analysis-ready CSVs. |
+| `data/album_to_era.json` | Maps CoTS album codes to canonical Album names + Era groupings. |
+| `data/raw/cots/` | CoTS files (downloaded, gitignored). |
+| `data/processed/albums.csv` | 13 albums with structural and linguistic metadata. |
+| `data/processed/songs.csv` | 244 songs with structural counts, per-word pre-classification, and section-tagged lyric counts. |
+| `data/processed/lyrics_by_section.json` | Section-tagged lyrics (verse / chorus / bridge / refrain / intro-outro). |
+| `data/archive/` | Previous dataset (199 songs, MIT-licensed Kaggle-derived, no era metadata). Kept for reference, not used by the active pipeline. |
+| `notebooks/legacy/Swift_NLP_2025.ipynb` | Original 2025-era notebook. Historical reference; uses the archived dataset. |
+| `THIRD_PARTY_LICENSES.md` | Documents the GPL-3.0 dependency on CoTS. |
+| `LICENSE` | MIT (this project's license). |
 
 ## How to run
 
-The notebook is self-contained. Easiest path:
+Two commands. The CoTS data is downloaded at runtime (not committed):
 
-1. Open `Swift_NLP_2025.ipynb` in [Google Colab](https://colab.research.google.com/) — upload the file or open it from your Drive.
-2. Run the cells in order.
-
-The first code cell installs the dependencies, which include `vaderSentiment`, `BERTopic`, `sentence-transformers`, `transformers`, and `torch`. If running locally, you'll want a Python 3.9+ environment with these pre-installed; the first cell will then just be a no-op.
-
-## Data schema
-
-```
-Song     string  — the song title
-Lyrics   string  — the raw lyrics, including section markers and newlines
-Year     integer — release year (Taylor's Version re-releases use the re-release year)
+```bash
+python data/fetch_cots.py
+python data/build_pipeline.py
 ```
 
-A row of cleaned lyrics (after the notebook's `clean_lyrics` function) is in lowercase, with section markers and punctuation stripped, ready for token-level analysis.
+Outputs land in `data/processed/`:
 
-## Methodology
+- `albums.csv` — 13 rows, one per studio album (+ 1 OTH bucket)
+- `songs.csv` — 244 rows, one per song
+- `lyrics_by_section.json` — section-tagged lyrics, keyed by `AlbumCode:TrackNumber:Title`
 
-The analysis uses four tools:
+Run from the repo root.
 
-- **VADER** (Valence Aware Dictionary for sEntiment Reasoning) — a rule-based sentiment tool tuned for short, social-media-style text.
-- **TextBlob** — a rule-based tool that returns both *polarity* (-1 to +1) and *subjectivity* (0 to 1).
-- **BERT** (distilbert-base-uncased-finetuned-sst-2-english) — a fine-tuned transformer for positive/negative classification with a confidence score.
-- **RoBERTa** (j-hartmann/emotion-english-distilroberta-base) — a transformer fine-tuned for emotion detection (joy, sadness, anger, etc.).
+## Data architecture
 
-POS tagging and stop-word filtering use spaCy.
+**Source**: [Corpus of Taylor Swift v1.4](https://github.com/sagesolar/Corpus-of-Taylor-Swift)
+by [sagesolar](https://github.com/sagesolar), GPL-3.0 licensed.
 
-## Year coverage
+CoTS provides 244 songs across 13 studio albums (and a small "Other Songs"
+bucket), with:
 
-The CSV spans 2006–2024 but is sparse in the early years:
+- Section-tagged lyrics (verse / chorus / bridge / refrain / intro-outro)
+- Pre-classified per-word linguistic metadata (PoS, frequency band, CEFR level, OEC rank)
+- Song-level structural counts (lines, verses, bridges, choruses, refrains, intros/outros)
+- Album-level aggregates (lines, words, prevalent verb / adjective / noun, lowest-frequency word)
 
-| Year | Songs |
-|---|---|
-| 2006 | 13 |
-| 2007 | 1 |
-| 2019 | 18 |
-| 2020 | 31 |
-| 2021 | 52 |
-| 2022 | 22 |
-| 2023 | 45 |
-| 2024 | 17 |
+**This project adds**: an `Era` taxonomy grouping the 13 albums into 4
+buckets for career-level trend analysis.
 
-Years 2008–2018 are missing because their songs have not been re-released under "Taylor's Version" yet — the year column uses the most recent release date, so unrevised tracks don't have a 2019+ year attached. The notebook's main analysis filters to **2019 onward (185 songs)** to focus on the most recent eras.
+### Era taxonomy
 
-## Highlights
+Four buckets, derived from
+[Wikipedia's classification](https://en.wikipedia.org/wiki/Taylor_Swift)
+at the level of stylistic continuity (not per-album genre):
 
-A few findings from the notebook (185 songs, 2019–2024):
+| Era | Albums | Songs | Notes |
+|---|---|---|---|
+| **Early career** | Taylor Swift (2006), Fearless (2008), Speak Now (2010), Red (2012) | 89 | Country, then crossover to pop/rock. |
+| **Mainstream pop** | 1989 (2014), Reputation (2017), Lover (2019), Midnights (2022), TTPD (2024) | 107 | The synth-pop / pop period (with Reputation as trap-pop, Lover as eclectic pop, TTPD as synth-pop — distinguished at the Album level). |
+| **Indie/folk** | Folklore (2020), Evermore (2020) | 34 | The pandemic-era indie-folk detour. |
+| **Soft rock** | The Life of a Showgirl (2025) | 12 | Newest release; one-album bucket for now. |
+| **Other** | Non-album songs | 2 | Standalone releases not tied to a studio album. |
 
-- **Most positive song (VADER):** *This Love (Taylor's Version)*
-- **Most positive song (TextBlob):** *Bejeweled*
-- **Most positive song (BERT):** *The Best Day (Taylor's Version)* — confidence 0.999
-- **Most negative song (VADER + TextBlob):** *Shake It Off (Taylor's Version)*
-- **Most negative song (BERT):** *illicit affairs* — confidence 1.0
-- **Top 5 verbs** (after cleaning): *know*, *think*, *go*, *get*, *come*
-- **Top 3 nouns:** *time*, *love*, *baby*
+Album-level distinctions (e.g. Red as "eclectic pop/rock", Reputation as
+"trap-pop", TTPD as "synth-pop") are preserved at the Album column level,
+not collapsed into the Era column. This trades granular genre labels for
+analytically useful groupings that show career-level trends without
+one-album buckets.
 
-YouTube links for the most-positive and most-negative songs are in the notebook itself.
-
-## What you can do next
-
-Some directions if you want to extend the analysis:
-
-- Add an **era** column (Debut, Fearless, Red, 1989, Reputation, Lover, Folklore/Evermore, Midnights, TTPD) and re-run the sentiment comparisons per era.
-- Run **BERTopic** on the cleaned lyrics to discover topic clusters (heartbreak, party, self-reflection, etc.).
-- Add **Spotify audio features** (tempo, energy, valence) to cross-reference lyrical sentiment with musical mood.
-- Build a **Streamlit / Gradio app** to interactively filter songs by year, era, or sentiment range.
+To refine the taxonomy, edit `data/album_to_era.json` and re-run
+`data/build_pipeline.py`.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+This project is licensed under **MIT** (see `LICENSE`).
 
-The lyrics dataset is a derivative of the [Kaggle tksmax/taylorswiftlyrics dataset](https://www.kaggle.com/datasets/tksmax/taylorswiftlyrics/data) — please respect the original source's terms.
+It depends on the [Corpus of Taylor Swift](https://github.com/sagesolar/Corpus-of-Taylor-Swift),
+which is **GPL-3.0**. CoTS files are downloaded at runtime and not
+committed to this repo, so this project's MIT license is preserved.
+See `THIRD_PARTY_LICENSES.md` for the full explanation.
+
+## What's coming
+
+The data infrastructure (phase 1) is in place. The planned analysis
+phases, in priority order:
+
+- **Phase 2** — Sentiment analysis (VADER, TextBlob, BERT, RoBERTa emotion),
+  per-song and per-album, with interactive visualizations.
+- **Phase 3** — Section-level analysis. Per-section sentiment scores,
+  emotional arc within each song, "which song has the biggest
+  verse→chorus sentiment jump?"
+- **Phase 4** — Vocabulary complexity over time (CEFR level distribution,
+  type-token ratio per album, album uniqueness / Jaccard similarity).
+- **Phase 5** — Topic modeling (BERTopic) and song similarity
+  (sentence-transformer embeddings), interactive song similarity graph.
+- **Phase 6** — LLM pass with a local small model (qwen3:4b via ollama):
+  per-song one-line summaries and "vibe" labels.
+- **Phase 7** — Visualization report (interactive plotly html) and
+  updated findings.
+
+Each phase will land as a separate commit when ready.
+
+## Legacy
+
+The original 2025-era notebook is preserved at
+`notebooks/legacy/Swift_NLP_2025.ipynb` for historical reference. It
+uses the archived 199-song dataset (Kaggle-derived, MIT-licensed) and
+the older VADER + TextBlob + BERT + RoBERTa-emotion pipeline. It is not
+part of the active analysis pipeline.
 
 ---
 
