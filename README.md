@@ -21,10 +21,12 @@ v1.4](https://github.com/sagesolar/Corpus-of-Taylor-Swift).
 | `analyze/section_analysis.py` | Phase 3 — reads the per-section CSV, summarises section-level patterns. Produces `reports/section_summary.md`. |
 | `analyze/vocabulary.py` | Phase 4 — re-tokenizes lyrics and joins with CoTS word-details (CEFR, OEC rank, frequency band). Produces `reports/vocabulary_per_song.csv` and `reports/vocabulary_summary.md`. |
 | `analyze/similarity.py` | Phase 5 — encodes lyrics with `all-MiniLM-L6-v2` and finds top-K most similar songs by cosine similarity. Produces `reports/song_similarity.csv` and `reports/similarity_summary.md`. |
+| `analyze/vibes.py` | Phase 6 (lightweight) — K-means clusters on the cached embeddings. Produces `reports/song_vibes.csv` and `reports/vibes_summary.md`. |
 | `reports/sentiment_summary.md` | Human-readable phase-2 findings (per-album, model disagreements, top/bottom songs). **Committed.** |
 | `reports/section_summary.md` | Human-readable phase-3 findings (per-section averages, verse→chorus jumps, bridge analysis). **Committed.** |
 | `reports/vocabulary_summary.md` | Human-readable phase-4 findings (per-album CEFR, OEC, MATTR; album-pair Jaccard similarity). **Committed.** |
 | `reports/similarity_summary.md` | Human-readable phase-5 findings (mutual nearest pairs, most distinctive/interchangeable songs, per-album centroid similarity). **Committed.** |
+| `reports/vibes_summary.md` | Human-readable phase-6 findings (10 K-means clusters, top songs per cluster, within-album consistency). **Committed.** |
 | `notebooks/legacy/Swift_NLP_2025.ipynb` | Original 2025-era notebook. Historical reference; uses the archived dataset. |
 | `THIRD_PARTY_LICENSES.md` | Documents the GPL-3.0 dependency on CoTS. |
 | `LICENSE` | MIT (this project's license). |
@@ -101,18 +103,18 @@ See `THIRD_PARTY_LICENSES.md` for the full explanation.
 ## What's coming
 
 Phase 1 (data), phase 2 (sentiment), phase 3 (section-level),
-phase 4 (vocabulary), and phase 5 (similarity) are in place. See:
+phase 4 (vocabulary), phase 5 (similarity), and phase 6 (vibe clusters)
+are in place. See:
 - [`reports/sentiment_summary.md`](reports/sentiment_summary.md)
 - [`reports/section_summary.md`](reports/section_summary.md)
 - [`reports/vocabulary_summary.md`](reports/vocabulary_summary.md)
 - [`reports/similarity_summary.md`](reports/similarity_summary.md)
+- [`reports/vibes_summary.md`](reports/vibes_summary.md)
 
-Remaining phases, in priority order:
+Remaining phase:
 
-- **Phase 6** — LLM pass with a local small model (qwen3:4b via ollama):
-  per-song one-line summaries and "vibe" labels.
-- **Phase 7** — Visualization report (interactive plotly html) and
-  updated findings.
+- **Phase 7** — Visualization report (interactive plotly html) combining
+  findings from phases 2-6.
 
 Each phase will land as a separate commit when ready.
 
