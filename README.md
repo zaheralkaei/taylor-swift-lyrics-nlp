@@ -22,6 +22,8 @@ v1.4](https://github.com/sagesolar/Corpus-of-Taylor-Swift).
 | `analyze/vocabulary.py` | Phase 4 — re-tokenizes lyrics and joins with CoTS word-details (CEFR, OEC rank, frequency band). Produces `reports/vocabulary_per_song.csv` and `reports/vocabulary_summary.md`. |
 | `analyze/similarity.py` | Phase 5 — encodes lyrics with `all-MiniLM-L6-v2` and finds top-K most similar songs by cosine similarity. Produces `reports/song_similarity.csv` and `reports/similarity_summary.md`. |
 | `analyze/vibes.py` | Phase 6 (lightweight) — K-means clusters on the cached embeddings. Produces `reports/song_vibes.csv` and `reports/vibes_summary.md`. |
+| `analyze/dashboard.py` | Phase 7 — combines phases 2-6 into a self-contained interactive HTML report (`reports/dashboard.html`, ~100 KB, plotly.js via CDN). |
+| `reports/dashboard.html` | Phase 7 — interactive dashboard (committed). Open in any browser. |
 | `reports/sentiment_summary.md` | Human-readable phase-2 findings (per-album, model disagreements, top/bottom songs). **Committed.** |
 | `reports/section_summary.md` | Human-readable phase-3 findings (per-section averages, verse→chorus jumps, bridge analysis). **Committed.** |
 | `reports/vocabulary_summary.md` | Human-readable phase-4 findings (per-album CEFR, OEC, MATTR; album-pair Jaccard similarity). **Committed.** |
@@ -102,19 +104,28 @@ See `THIRD_PARTY_LICENSES.md` for the full explanation.
 
 ## What's coming
 
-Phase 1 (data), phase 2 (sentiment), phase 3 (section-level),
-phase 4 (vocabulary), phase 5 (similarity), and phase 6 (vibe clusters)
-are in place. See:
-- [`reports/sentiment_summary.md`](reports/sentiment_summary.md)
-- [`reports/section_summary.md`](reports/section_summary.md)
-- [`reports/vocabulary_summary.md`](reports/vocabulary_summary.md)
-- [`reports/similarity_summary.md`](reports/similarity_summary.md)
-- [`reports/vibes_summary.md`](reports/vibes_summary.md)
+All seven phases are in place. The combined interactive dashboard is at
+[`reports/dashboard.html`](reports/dashboard.html) — open in any browser.
 
-Remaining phase:
+Per-phase summaries (committed):
+- [`reports/sentiment_summary.md`](reports/sentiment_summary.md) — phase 2
+- [`reports/section_summary.md`](reports/section_summary.md) — phase 3
+- [`reports/vocabulary_summary.md`](reports/vocabulary_summary.md) — phase 4
+- [`reports/similarity_summary.md`](reports/similarity_summary.md) — phase 5
+- [`reports/vibes_summary.md`](reports/vibes_summary.md) — phase 6
 
-- **Phase 7** — Visualization report (interactive plotly html) combining
-  findings from phases 2-6.
+Reproducing everything from scratch (assumes data/raw/cots/ is empty):
+
+```bash
+python data/fetch_cots.py           # downloads CoTS (~2.3 MB)
+python data/build_pipeline.py       # builds songs.csv + albums.csv + lyrics_by_section.json
+python analyze/sentiment.py         # phase 2 (~3 min CPU)
+python analyze/section_analysis.py  # phase 3 (instant)
+python analyze/vocabulary.py        # phase 4 (~30 sec CPU)
+python analyze/similarity.py        # phase 5 (~10 sec CPU after model download)
+python analyze/vibes.py             # phase 6 (instant, reuses embeddings)
+python analyze/dashboard.py         # phase 7 (instant)
+```
 
 Each phase will land as a separate commit when ready.
 
