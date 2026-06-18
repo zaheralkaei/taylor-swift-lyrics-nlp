@@ -1,0 +1,41 @@
+[info] loading data/processed/songs.csv ...
+[info] 244 songs
+[info] 244 songs have section-tagged lyrics
+
+============================================================
+PHASE A — rule-based (VADER + TextBlob)
+============================================================
+  [ 25/244] Forever & Always                          vader=-0.974  tb=+0.022
+  [ 50/244] Innocent                                  vader=+0.979  tb=+0.249
+  [ 75/244] Starlight                                 vader=+0.997  tb=+0.219
+  [100/244] This Love                                 vader=+0.999  tb=+0.202
+  [125/244] Call It What You Want                     vader=+0.998  tb=+0.166
+  [150/244] No Body, No Crime                         vader=-0.383  tb=+0.255
+  [175/244] Betty                                     vader=+0.957  tb=-0.141
+  [200/244] Fortnight                                 vader=+0.788  tb=+0.315
+  [225/244] The Prophecy                              vader=+0.992  tb=+0.162
+  [244/244] Only The Young                            vader=-0.979  tb=+0.017
+
+[ok] wrote 244 rows to reports/sentiment_per_song.csv
+[ok] wrote 717 rows to reports/sentiment_per_section.csv
+
+============================================================
+PHASE B — BERT (distilbert-sst2, positive/negative)
+============================================================
+[info] loading model (downloads ~250 MB on first run) ...
+Loading weights:   0%|          | 0/104 [00:00<?, ?it/s]Loading weights: 100%|██████████| 104/104 [00:00<00:00, 13283.62it/s]
+[ok] loaded in 3.6s, device=cpu
+  [ 25/244] Forever & Always                          bert_pos=0.007
+  [ 50/244] Innocent                                  bert_pos=0.833
+  [ 75/244] Starlight                                 bert_pos=0.998
+  [100/244] This Love                                 bert_pos=0.970
+  [125/244] Call It What You Want                     bert_pos=0.990
+  [150/244] No Body, No Crime                         bert_pos=0.007
+  [175/244] Betty                                     bert_pos=0.001
+  [200/244] Fortnight                                 bert_pos=0.011
+  [225/244] The Prophecy                              bert_pos=0.002
+  [244/244] Only The Young                            bert_pos=0.730
+
+[ok] updated reports/sentiment_per_song.csv with BERT columns
+
+[done] sentiment analysis complete (RoBERTa-emotion skipped — too noisy on lyrics)
