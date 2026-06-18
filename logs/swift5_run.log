@@ -1,0 +1,14 @@
+[info] 244 songs to encode
+[info] loading model sentence-transformers/all-MiniLM-L6-v2 (~80 MB on first run) ...
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 12340.06it/s]
+[info] encoding 244 songs ...
+Batches:   0%|          | 0/31 [00:00<?, ?it/s]Batches:   3%|▎         | 1/31 [00:00<00:05,  5.72it/s]Batches:   6%|▋         | 2/31 [00:00<00:05,  5.58it/s]Batches:  10%|▉         | 3/31 [00:00<00:04,  5.66it/s]Batches:  13%|█▎        | 4/31 [00:00<00:04,  5.55it/s]Batches:  16%|█▌        | 5/31 [00:00<00:04,  5.48it/s]Batches:  19%|█▉        | 6/31 [00:01<00:04,  5.54it/s]Batches:  23%|██▎       | 7/31 [00:01<00:04,  5.55it/s]Batches:  26%|██▌       | 8/31 [00:01<00:04,  5.59it/s]Batches:  29%|██▉       | 9/31 [00:01<00:03,  5.61it/s]Batches:  32%|███▏      | 10/31 [00:01<00:03,  5.64it/s]Batches:  35%|███▌      | 11/31 [00:01<00:03,  5.64it/s]Batches:  39%|███▊      | 12/31 [00:02<00:03,  5.65it/s]Batches:  42%|████▏     | 13/31 [00:02<00:03,  5.53it/s]Batches:  45%|████▌     | 14/31 [00:02<00:03,  5.57it/s]Batches:  48%|████▊     | 15/31 [00:02<00:02,  5.59it/s]Batches:  52%|█████▏    | 16/31 [00:02<00:02,  5.61it/s]Batches:  55%|█████▍    | 17/31 [00:03<00:02,  5.61it/s]Batches:  58%|█████▊    | 18/31 [00:03<00:02,  5.63it/s]Batches:  61%|██████▏   | 19/31 [00:03<00:02,  5.61it/s]Batches:  65%|██████▍   | 20/31 [00:03<00:01,  5.58it/s]Batches:  68%|██████▊   | 21/31 [00:03<00:01,  5.56it/s]Batches:  71%|███████   | 22/31 [00:03<00:01,  5.55it/s]Batches:  74%|███████▍  | 23/31 [00:04<00:01,  5.42it/s]Batches:  77%|███████▋  | 24/31 [00:04<00:01,  5.36it/s]Batches:  81%|████████  | 25/31 [00:04<00:01,  5.42it/s]Batches:  84%|████████▍ | 26/31 [00:04<00:00,  5.46it/s]Batches:  87%|████████▋ | 27/31 [00:04<00:00,  5.48it/s]Batches:  90%|█████████ | 28/31 [00:05<00:00,  5.51it/s]Batches:  94%|█████████▎| 29/31 [00:05<00:00,  5.52it/s]Batches:  97%|█████████▋| 30/31 [00:05<00:00,  5.52it/s]Batches: 100%|██████████| 31/31 [00:05<00:00,  5.64it/s]
+[info] embeddings shape: (244, 384)
+[ok] wrote reports/song_similarity.csv (244 rows)
+[info] 170 mutual top-K pairs
+[ok] wrote reports/similarity_summary.md (144 lines)
+
+=== headline ===
+top mutual pair: Back To December (Speak Now) <-> 'Tis The Damn Season (Evermore) sim=0.7689
+most distinctive: The Man (Lover) mean_sim=0.3278
+most interchangeable: 'Tis The Damn Season (Evermore) mean_sim=0.7182
