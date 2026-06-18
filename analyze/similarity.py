@@ -227,11 +227,15 @@ def main() -> int:
     album_names = sorted(centroids.keys(), key=year_key)
     pairs = []
     for i, a in enumerate(album_names):
+        if a == "Other": continue  # only 2 songs, distort centroid
         for b in album_names[i+1:]:
+            if b == "Other": continue
             s = float(centroids[a] @ centroids[b])
             pairs.append((s, a, b))
     pairs.sort(reverse=True)
     L.append("### Closest album pairs (by centroid similarity)")
+    L.append("")
+    L.append("Excludes the 'Other' bucket (2 non-album songs, centroid is too noisy).")
     L.append("")
     L.append("| Album A | Album B | similarity |")
     L.append("|---------|---------|------------|")
