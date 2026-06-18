@@ -1,0 +1,21 @@
+{
+  "_comment": "Maps CoTS album codes to canonical Album name + Year. Edit this file to refine names. Year comes from CoTS upstream (cots-album-details.tsv) but is included here for the OTH bucket (non-album songs) where CoTS leaves it blank.",
+
+  "_note_on_naming": "Album names are our canonical labels. CoTS uses codes (TSW, FER, etc.) and short names; we use the standard release names. The first album is 'Taylor Swift' (self-titled, 2006) — Wikipedia and Discogs both use this name.",
+
+  "_albums": {
+    "TSW": {"album": "Taylor Swift",            "year": 2006},
+    "FER": {"album": "Fearless",                "year": 2008},
+    "SPN": {"album": "Speak Now",               "year": 2010},
+    "RED": {"album": "Red",                     "year": 2012},
+    "NEN": {"album": "1989",                    "year": 2014},
+    "REP": {"album": "Reputation",              "year": 2017},
+    "LVR": {"album": "Lover",                   "year": 2019},
+    "FOL": {"album": "Folklore",                "year": 2020},
+    "EVE": {"album": "Evermore",                "year": 2020},
+    "MID": {"album": "Midnights",               "year": 2022},
+    "TPD": {"album": "TTPD",                    "year": 2024},
+    "LSG": {"album": "Life of a Showgirl",      "year": 2025},
+    "OTH": {"album": "Other",                   "year": null}
+  }
+}

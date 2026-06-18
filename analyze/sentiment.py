@@ -1,12 +1,17 @@
 """
-Compute per-song and per-section sentiment + emotion scores for every song
+Compute per-song and per-section sentiment scores for every song
 in data/processed/songs.csv.
 
 Models (loaded one at a time to minimize peak memory):
   - VADER: rule-based sentiment, range [-1, 1]
   - TextBlob: rule-based polarity + subjectivity
-  - BERT (distilbert-base-uncased-finetuned-sst-2-english): positive/negative classifier
-  - RoBERTa (j-hartmann/emotion-english-distilroberta-base): 7-way emotion classifier
+  - DistilBERT (distilbert-base-uncased-finetuned-sst-2-english): positive/negative classifier
+
+Note: the earlier pipeline also scored a 7-way emotion classifier
+(j-hartmann/emotion-english-distilroberta-base). It was removed because
+the model is trained on short-form reviews/dialogue and produces
+near-uniform distributions on abstract lyrical text — not a reliable
+signal. DistilBERT (positive/negative) is kept because it transfers well.
 
 Inputs:
   - data/processed/songs.csv
@@ -15,12 +20,11 @@ Inputs:
 Outputs:
   - reports/sentiment_per_song.csv       (244 rows × scores)
   - reports/sentiment_per_section.csv   (one row per song × section)
-  - reports/sentiment_summary.md        (per-album + per-era aggregates)
 
 Usage:
   python analyze/sentiment.py                 # full run
   python analyze/sentiment.py --limit 10      # first 10 songs only (smoke test)
-  python analyze/sentiment.py --no-bert       # skip BERT + RoBERTa (fast)
+  python analyze/sentiment.py --no-bert       # rule-based only (fast, no model download)
 """
 
 from __future__ import annotations
@@ -99,18 +103,8 @@ def compute_bert(text: str, tokenizer, model, device) -> dict:
     return {"bert_neg": float(probs[0]), "bert_pos": float(probs[1])}
 
 
-def compute_roberta_emotion(text: str, tokenizer, model, device) -> dict:
-    """j-hartmann/emotion-english-distilroberta-base: 7 emotions."""
-    if not text:
-        return {f"emotion_{e}": None for e in ["anger","disgust","fear","joy","neutral","sadness","surprise"]}
-    import torch
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    with torch.no_grad():
-        logits = model(**inputs).logits
-    probs = torch.softmax(logits, dim=-1)[0].cpu().tolist()
-    labels = ["anger","disgust","fear","joy","neutral","sadness","surprise"]
-    return {f"emotion_{labels[i]}": float(probs[i]) for i in range(len(labels))}
+# (compute_roberta_emotion was removed 2026-06-18 — model was too noisy on lyrics.
+# See the module docstring for details.)
 
 
 def main() -> int:
@@ -150,7 +144,7 @@ def main() -> int:
         full_text = all_text(lines)
 
         row = {
-            "AlbumCode": s["AlbumCode"], "Album": s["Album"], "Year": s["Year"], "Era": s["Era"],
+            "AlbumCode": s["AlbumCode"], "Album": s["Album"], "Year": s["Year"],
             "Title": s["Title"], "TrackNumber": s["TrackNumber"],
             "WordCount": s["Words"],
         }
@@ -163,7 +157,7 @@ def main() -> int:
             if not sec_text:
                 continue
             sec_row = {
-                "AlbumCode": s["AlbumCode"], "Album": s["Album"], "Era": s["Era"],
+                "AlbumCode": s["AlbumCode"], "Album": s["Album"],
                 "Title": s["Title"], "TrackNumber": s["TrackNumber"],
                 "Section": section,
                 "SectionCharCount": len(sec_text),
@@ -234,39 +228,7 @@ def main() -> int:
     del bert_tok, bert_mod
     gc.collect()
 
-    # ----- phase C: RoBERTa emotion -----
-    print("\n" + "=" * 60)
-    print("PHASE C — RoBERTa emotion (7-way classifier)")
-    print("=" * 60)
-    print("[info] loading model (downloads ~250 MB on first run) ...")
-    t0 = time.time()
-    rob_name = "j-hartmann/emotion-english-distilroberta-base"
-    rob_tok = AutoTokenizer.from_pretrained(rob_name)
-    rob_mod = AutoModelForSequenceClassification.from_pretrained(rob_name)
-    rob_mod.to(device)
-    rob_mod.eval()
-    print(f"[ok] loaded in {time.time()-t0:.1f}s, device={device}")
-
-    for i, s in enumerate(songs):
-        key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"
-        lines = lyrics_for_song(key, lyrics_by_song)
-        full_text = all_text(lines)
-        row = per_song_rows[i]
-        row.update(compute_roberta_emotion(full_text, rob_tok, rob_mod, device))
-        if (i + 1) % 25 == 0 or i + 1 == len(songs):
-            top = max((k, v) for k, v in row.items() if k.startswith("emotion_") and v is not None)
-            print(f"  [{i+1:>3}/{len(songs)}] {s['Title'][:40]:<40}  top={top[0].replace('emotion_','')}({top[1]:.3f})")
-
-    with out_a.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(per_song_rows[0].keys()))
-        w.writeheader()
-        w.writerows(per_song_rows)
-    print(f"\n[ok] updated {out_a.relative_to(REPO_ROOT)} with emotion columns")
-
-    del rob_tok, rob_mod
-    gc.collect()
-
-    print("\n[done] all phases complete")
+    print("\n[done] sentiment analysis complete (RoBERTa-emotion skipped — too noisy on lyrics)")
     return 0
 
 

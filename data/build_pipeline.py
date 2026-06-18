@@ -5,7 +5,7 @@ Inputs (downloaded by data/fetch_cots.py, gitignored):
   - data/raw/cots/cots-album-details.tsv
   - data/raw/cots/cots-song-details.tsv
   - data/raw/cots/album-song-lyrics.json
-  - data/album_to_era.json (era taxonomy)
+  - data/album_meta.json (album code -> display name + year mapping)
 
 Outputs (gitignored, regenerated on every run):
   - data/processed/songs.csv        - one row per song with all metadata
@@ -22,7 +22,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 COTS_DIR = REPO_ROOT / "data" / "raw" / "cots"
-ALBUM_TO_ERA = REPO_ROOT / "data" / "album_to_era.json"
+ALBUM_META = REPO_ROOT / "data" / "album_meta.json"
 OUT_DIR = REPO_ROOT / "data" / "processed"
 
 
@@ -55,9 +55,9 @@ def main() -> int:
             print(f"        run: python data/fetch_cots.py")
             return 1
 
-    with ALBUM_TO_ERA.open(encoding="utf-8") as f:
-        era_doc = json.load(f)
-    album_to_era = era_doc["_albums"]
+    with ALBUM_META.open(encoding="utf-8") as f:
+        meta_doc = json.load(f)
+    album_to_meta = meta_doc["_albums"]
 
     # ---- albums ----
     print(f"[info] reading {COTS_DIR.name}/cots-album-details.tsv ...")
@@ -65,12 +65,11 @@ def main() -> int:
     albums_out = []
     for row in raw_albums:
         code = row["Code"]
-        meta = album_to_era.get(code, {"album": code, "year": None, "era": "Other"})
+        meta = album_to_meta.get(code, {"album": code, "year": None})
         albums_out.append({
             "AlbumCode": code,
             "Album":     meta["album"],
             "Year":      coerce_int(row.get("Year")) or meta.get("year"),
-            "Era":       meta["era"],
             "Songs":     coerce_int(row.get("Songs")),
             "Lines":     coerce_int(row.get("Lines")),
             "Words":     coerce_int(row.get("Words")),
@@ -86,12 +85,11 @@ def main() -> int:
     songs_out = []
     for row in raw_songs:
         code = row["Album"]
-        meta = album_to_era.get(code, {"album": code, "year": None, "era": "Other"})
+        meta = album_to_meta.get(code, {"album": code, "year": None})
         songs_out.append({
             "AlbumCode":    code,
             "Album":        meta["album"],
             "Year":         meta.get("year"),
-            "Era":          meta["era"],
             "TrackNumber":  coerce_int(row.get("Track")),
             "Title":        row.get("Title", ""),
             "FeaturedArtists": row.get("FeaturedArtists", ""),
@@ -151,7 +149,7 @@ def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     albums_csv = OUT_DIR / "albums.csv"
-    fieldnames_a = ["AlbumCode", "Album", "Year", "Era", "Songs", "Lines", "Words",
+    fieldnames_a = ["AlbumCode", "Album", "Year", "Songs", "Lines", "Words",
                     "LowestFreqWord", "PrevalentVerb", "PrevalentAdjective", "PrevalentNoun"]
     albums_out.sort(key=lambda r: (r["Year"] or 9999, r["AlbumCode"]))
     with albums_csv.open("w", encoding="utf-8", newline="") as f:
@@ -161,7 +159,7 @@ def main() -> int:
     print(f"[ok] wrote {len(albums_out)} albums to {albums_csv.relative_to(REPO_ROOT)}")
 
     songs_csv = OUT_DIR / "songs.csv"
-    fieldnames_s = ["AlbumCode", "Album", "Year", "Era", "TrackNumber", "Title",
+    fieldnames_s = ["AlbumCode", "Album", "Year", "TrackNumber", "Title",
                     "FeaturedArtists", "FromTheVault",
                     "Lines", "Verses", "Bridges", "Choruses", "Refrains", "InOuts",
                     "Words",
@@ -191,14 +189,7 @@ def main() -> int:
     print("\n=== per-album counts ===")
     for a in albums_out:
         marker = "" if a["Songs"] else "  <-- no songs?"
-        print(f"  {a['AlbumCode']:<4} {a['Album']:<22} ({a['Year']}) [{a['Era']:<15}] {a['Songs']:>3} songs{marker}")
-
-    print("\n=== per-era counts ===")
-    from collections import Counter
-    era_counts = Counter(a["Era"] for a in albums_out)
-    era_song_counts = Counter(s["Era"] for s in songs_out)
-    for era in era_doc["_eras"]:
-        print(f"  {era:<18} {era_counts.get(era, 0):>2} albums  {era_song_counts.get(era, 0):>3} songs")
+        print(f"  {a['AlbumCode']:<4} {a['Album']:<22} ({a['Year']}) {a['Songs']:>3} songs{marker}")
 
     return 0
 
