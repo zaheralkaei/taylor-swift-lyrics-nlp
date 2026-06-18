@@ -1,0 +1,21 @@
+{
+  "_comment": "Maps CoTS album codes to canonical Album name + Era. Edit this file to refine era taxonomy. The Era column is computed from this lookup at build time.",
+
+  "_albums": {
+    "TSW": {"album": "Debut",                       "year": 2006, "era": "Country"},
+    "FER": {"album": "Fearless",                    "year": 2008, "era": "Country"},
+    "SPN": {"album": "Speak Now",                   "year": 2010, "era": "Country"},
+    "RED": {"album": "Red",                         "year": 2012, "era": "Pop transition"},
+    "NEN": {"album": "1989",                        "year": 2014, "era": "Pop transition"},
+    "REP": {"album": "Reputation",                  "year": 2017, "era": "Pop transition"},
+    "LVR": {"album": "Lover",                       "year": 2019, "era": "Synth-pop"},
+    "FOL": {"album": "Folklore",                    "year": 2020, "era": "Indie/folk"},
+    "EVE": {"album": "Evermore",                    "year": 2020, "era": "Indie/folk"},
+    "MID": {"album": "Midnights",                   "year": 2022, "era": "Synth-pop"},
+    "TPD": {"album": "TTPD",                        "year": 2024, "era": "Avant-garde"},
+    "LSG": {"album": "Life of a Showgirl",          "year": 2025, "era": "Contemporary"},
+    "OTH": {"album": "Other",                       "year": null, "era": "Other"}
+  },
+
+  "_eras": ["Country", "Pop transition", "Indie/folk", "Synth-pop", "Avant-garde", "Contemporary", "Other"]
+}
