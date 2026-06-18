@@ -19,8 +19,10 @@ v1.4](https://github.com/sagesolar/Corpus-of-Taylor-Swift).
 | `data/archive/` | Previous dataset (199 songs, MIT-licensed Kaggle-derived). Kept for reference, not used by the active pipeline. |
 | `analyze/sentiment.py` | Phase 2 — runs VADER + TextBlob + DistilBERT (SST-2) across all 244 songs. Produces `reports/sentiment_per_song.csv` and `reports/sentiment_per_section.csv`. |
 | `analyze/section_analysis.py` | Phase 3 — reads the per-section CSV, summarises section-level patterns. Produces `reports/section_summary.md`. |
+| `analyze/vocabulary.py` | Phase 4 — re-tokenizes lyrics and joins with CoTS word-details (CEFR, OEC rank, frequency band). Produces `reports/vocabulary_per_song.csv` and `reports/vocabulary_summary.md`. |
 | `reports/sentiment_summary.md` | Human-readable phase-2 findings (per-album, model disagreements, top/bottom songs). **Committed.** |
 | `reports/section_summary.md` | Human-readable phase-3 findings (per-section averages, verse→chorus jumps, bridge analysis). **Committed.** |
+| `reports/vocabulary_summary.md` | Human-readable phase-4 findings (per-album CEFR, OEC, MATTR; album-pair Jaccard similarity). **Committed.** |
 | `notebooks/legacy/Swift_NLP_2025.ipynb` | Original 2025-era notebook. Historical reference; uses the archived dataset. |
 | `THIRD_PARTY_LICENSES.md` | Documents the GPL-3.0 dependency on CoTS. |
 | `LICENSE` | MIT (this project's license). |
@@ -96,15 +98,14 @@ See `THIRD_PARTY_LICENSES.md` for the full explanation.
 
 ## What's coming
 
-Phase 1 (data) and phase 2 (sentiment) are in place. See
-[`reports/sentiment_summary.md`](reports/sentiment_summary.md) for
-phase 2 findings. Phase 3 (section-level) is in place — see
-[`reports/section_summary.md`](reports/section_summary.md).
+Phase 1 (data), phase 2 (sentiment), phase 3 (section-level), and
+phase 4 (vocabulary) are in place. See:
+- [`reports/sentiment_summary.md`](reports/sentiment_summary.md)
+- [`reports/section_summary.md`](reports/section_summary.md)
+- [`reports/vocabulary_summary.md`](reports/vocabulary_summary.md)
 
 Remaining phases, in priority order:
 
-- **Phase 4** — Vocabulary complexity over time (CEFR level distribution,
-  type-token ratio per album, album uniqueness / Jaccard similarity).
 - **Phase 5** — Topic modeling (BERTopic) and song similarity
   (sentence-transformer embeddings), interactive song similarity graph.
 - **Phase 6** — LLM pass with a local small model (qwen3:4b via ollama):
