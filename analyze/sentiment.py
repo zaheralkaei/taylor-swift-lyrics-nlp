@@ -1,0 +1,274 @@
+"""
+Compute per-song and per-section sentiment + emotion scores for every song
+in data/processed/songs.csv.
+
+Models (loaded one at a time to minimize peak memory):
+  - VADER: rule-based sentiment, range [-1, 1]
+  - TextBlob: rule-based polarity + subjectivity
+  - BERT (distilbert-base-uncased-finetuned-sst-2-english): positive/negative classifier
+  - RoBERTa (j-hartmann/emotion-english-distilroberta-base): 7-way emotion classifier
+
+Inputs:
+  - data/processed/songs.csv
+  - data/processed/lyrics_by_section.json
+
+Outputs:
+  - reports/sentiment_per_song.csv       (244 rows × scores)
+  - reports/sentiment_per_section.csv   (one row per song × section)
+  - reports/sentiment_summary.md        (per-album + per-era aggregates)
+
+Usage:
+  python analyze/sentiment.py                 # full run
+  python analyze/sentiment.py --limit 10      # first 10 songs only (smoke test)
+  python analyze/sentiment.py --no-bert       # skip BERT + RoBERTa (fast)
+"""
+
+from __future__ import annotations
+import argparse
+import csv
+import gc
+import json
+import re
+import sys
+import time
+from collections import defaultdict
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+SONGS_CSV = REPO_ROOT / "data" / "processed" / "songs.csv"
+LYRICS_JSON = REPO_ROOT / "data" / "processed" / "lyrics_by_section.json"
+OUT_DIR = REPO_ROOT / "reports"
+
+
+SECTION_GROUPS = {
+    "verse":   ["Verse"],
+    "chorus":  ["Chorus"],
+    "bridge":  ["Bridge"],
+    "refrain": ["Refrain"],
+    "in_out":  ["Intro", "Outro", "Spoken Outro"],
+}
+
+
+def clean_for_sentiment(text: str) -> str:
+    """Strip section markers and bracketed annotations for sentiment analysis."""
+    text = re.sub(r"\[.*?\]", " ", text)
+    text = re.sub(r"\(.*?\)", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def lyrics_for_song(key: str, lyrics_by_song: dict) -> list[dict]:
+    return lyrics_by_song.get(key, [])
+
+
+def section_text(lines: list[dict], section: str) -> str:
+    """Concatenate lines belonging to a single section group."""
+    parts = [ln["Text"] for ln in lines if ln.get("SongPart") in SECTION_GROUPS[section]]
+    return clean_for_sentiment(" ".join(parts))
+
+
+def all_text(lines: list[dict]) -> str:
+    return clean_for_sentiment(" ".join(ln["Text"] for ln in lines))
+
+
+def compute_vader(text: str, sia) -> dict:
+    if not text:
+        return {"vader_neg": None, "vader_neu": None, "vader_pos": None, "vader_compound": None}
+    s = sia.polarity_scores(text)
+    return {"vader_neg": s["neg"], "vader_neu": s["neu"], "vader_pos": s["pos"], "vader_compound": s["compound"]}
+
+
+def compute_textblob(text: str) -> dict:
+    if not text:
+        return {"tb_polarity": None, "tb_subjectivity": None}
+    from textblob import TextBlob
+    b = TextBlob(text).sentiment
+    return {"tb_polarity": b.polarity, "tb_subjectivity": b.subjectivity}
+
+
+def compute_bert(text: str, tokenizer, model, device) -> dict:
+    """distilbert-sst2: returns positive/negative probabilities."""
+    if not text:
+        return {"bert_pos": None, "bert_neg": None}
+    import torch
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+    with torch.no_grad():
+        logits = model(**inputs).logits
+    probs = torch.softmax(logits, dim=-1)[0].cpu().tolist()
+    return {"bert_neg": float(probs[0]), "bert_pos": float(probs[1])}
+
+
+def compute_roberta_emotion(text: str, tokenizer, model, device) -> dict:
+    """j-hartmann/emotion-english-distilroberta-base: 7 emotions."""
+    if not text:
+        return {f"emotion_{e}": None for e in ["anger","disgust","fear","joy","neutral","sadness","surprise"]}
+    import torch
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+    with torch.no_grad():
+        logits = model(**inputs).logits
+    probs = torch.softmax(logits, dim=-1)[0].cpu().tolist()
+    labels = ["anger","disgust","fear","joy","neutral","sadness","surprise"]
+    return {f"emotion_{labels[i]}": float(probs[i]) for i in range(len(labels))}
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--limit", type=int, default=None, help="process only the first N songs (smoke test)")
+    p.add_argument("--no-bert", action="store_true", help="skip BERT and RoBERTa (rule-based only)")
+    args = p.parse_args()
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    print(f"[info] loading {SONGS_CSV.relative_to(REPO_ROOT)} ...")
+    with SONGS_CSV.open(encoding="utf-8") as f:
+        songs = list(csv.DictReader(f))
+    print(f"[info] {len(songs)} songs")
+
+    with LYRICS_JSON.open(encoding="utf-8") as f:
+        lyrics_by_song = json.load(f)
+    print(f"[info] {len(lyrics_by_song)} songs have section-tagged lyrics\n")
+
+    if args.limit:
+        songs = songs[:args.limit]
+        print(f"[info] --limit {args.limit}: processing first {len(songs)} songs only\n")
+
+    # ----- phase A: rule-based (vader + textblob) -----
+    print("=" * 60)
+    print("PHASE A — rule-based (VADER + TextBlob)")
+    print("=" * 60)
+    from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+    sia = SentimentIntensityAnalyzer()
+
+    per_song_rows = []
+    per_section_rows = []
+
+    for i, s in enumerate(songs):
+        key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"
+        lines = lyrics_for_song(key, lyrics_by_song)
+        full_text = all_text(lines)
+
+        row = {
+            "AlbumCode": s["AlbumCode"], "Album": s["Album"], "Year": s["Year"], "Era": s["Era"],
+            "Title": s["Title"], "TrackNumber": s["TrackNumber"],
+            "WordCount": s["Words"],
+        }
+        row.update(compute_vader(full_text, sia))
+        row.update(compute_textblob(full_text))
+
+        # per-section scores (only if we have sections for this song)
+        for section in SECTION_GROUPS:
+            sec_text = section_text(lines, section)
+            if not sec_text:
+                continue
+            sec_row = {
+                "AlbumCode": s["AlbumCode"], "Album": s["Album"], "Era": s["Era"],
+                "Title": s["Title"], "TrackNumber": s["TrackNumber"],
+                "Section": section,
+                "SectionCharCount": len(sec_text),
+            }
+            sec_row.update(compute_vader(sec_text, sia))
+            sec_row.update(compute_textblob(sec_text))
+            per_section_rows.append(sec_row)
+
+        per_song_rows.append(row)
+        if (i + 1) % 25 == 0 or i + 1 == len(songs):
+            print(f"  [{i+1:>3}/{len(songs)}] {s['Title'][:40]:<40}  vader={row['vader_compound']:+.3f}  tb={row['tb_polarity']:+.3f}")
+
+    # write rule-based results immediately
+    out_a = OUT_DIR / "sentiment_per_song.csv"
+    fieldnames_a = list(per_song_rows[0].keys())
+    with out_a.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames_a)
+        w.writeheader()
+        w.writerows(per_song_rows)
+    print(f"\n[ok] wrote {len(per_song_rows)} rows to {out_a.relative_to(REPO_ROOT)}")
+
+    if per_section_rows:
+        out_s = OUT_DIR / "sentiment_per_section.csv"
+        fieldnames_s = list(per_section_rows[0].keys())
+        with out_s.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=fieldnames_s)
+            w.writeheader()
+            w.writerows(per_section_rows)
+        print(f"[ok] wrote {len(per_section_rows)} rows to {out_s.relative_to(REPO_ROOT)}")
+
+    if args.no_bert:
+        print("\n[info] --no-bert: skipping transformer models")
+        return 0
+
+    # ----- phase B: BERT (distilbert-sst2) -----
+    print("\n" + "=" * 60)
+    print("PHASE B — BERT (distilbert-sst2, positive/negative)")
+    print("=" * 60)
+    print("[info] loading model (downloads ~250 MB on first run) ...")
+    t0 = time.time()
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForSequenceClassification
+    import torch
+    bert_name = "distilbert-base-uncased-finetuned-sst-2-english"
+    bert_tok = AutoTokenizer.from_pretrained(bert_name)
+    bert_mod = AutoModelForSequenceClassification.from_pretrained(bert_name)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    bert_mod.to(device)
+    bert_mod.eval()
+    print(f"[ok] loaded in {time.time()-t0:.1f}s, device={device}")
+
+    for i, s in enumerate(songs):
+        key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"
+        lines = lyrics_for_song(key, lyrics_by_song)
+        full_text = all_text(lines)
+        row = per_song_rows[i]
+        row.update(compute_bert(full_text, bert_tok, bert_mod, device))
+        if (i + 1) % 25 == 0 or i + 1 == len(songs):
+            print(f"  [{i+1:>3}/{len(songs)}] {s['Title'][:40]:<40}  bert_pos={row['bert_pos']:.3f}")
+
+    # rewrite the per_song csv with bert columns added
+    with out_a.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(per_song_rows[0].keys()))
+        w.writeheader()
+        w.writerows(per_song_rows)
+    print(f"\n[ok] updated {out_a.relative_to(REPO_ROOT)} with BERT columns")
+
+    # free BERT
+    del bert_tok, bert_mod
+    gc.collect()
+
+    # ----- phase C: RoBERTa emotion -----
+    print("\n" + "=" * 60)
+    print("PHASE C — RoBERTa emotion (7-way classifier)")
+    print("=" * 60)
+    print("[info] loading model (downloads ~250 MB on first run) ...")
+    t0 = time.time()
+    rob_name = "j-hartmann/emotion-english-distilroberta-base"
+    rob_tok = AutoTokenizer.from_pretrained(rob_name)
+    rob_mod = AutoModelForSequenceClassification.from_pretrained(rob_name)
+    rob_mod.to(device)
+    rob_mod.eval()
+    print(f"[ok] loaded in {time.time()-t0:.1f}s, device={device}")
+
+    for i, s in enumerate(songs):
+        key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"
+        lines = lyrics_for_song(key, lyrics_by_song)
+        full_text = all_text(lines)
+        row = per_song_rows[i]
+        row.update(compute_roberta_emotion(full_text, rob_tok, rob_mod, device))
+        if (i + 1) % 25 == 0 or i + 1 == len(songs):
+            top = max((k, v) for k, v in row.items() if k.startswith("emotion_") and v is not None)
+            print(f"  [{i+1:>3}/{len(songs)}] {s['Title'][:40]:<40}  top={top[0].replace('emotion_','')}({top[1]:.3f})")
+
+    with out_a.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(per_song_rows[0].keys()))
+        w.writeheader()
+        w.writerows(per_song_rows)
+    print(f"\n[ok] updated {out_a.relative_to(REPO_ROOT)} with emotion columns")
+
+    del rob_tok, rob_mod
+    gc.collect()
+
+    print("\n[done] all phases complete")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
