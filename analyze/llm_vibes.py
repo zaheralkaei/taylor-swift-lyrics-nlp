@@ -158,10 +158,9 @@ def main() -> int:
             summary, vibe = parse_response(raw)
             total_latency += lat
             ok = bool(summary)
-            if not ok:
-                fails += 1
         except Exception as e:
-            raw, summary, vibe, lat = str(e), "", "", 0.0
+            raw, lat, summary, vibe = str(e), 0.0, "", ""
+            ok = False
             fails += 1
 
         rows.append({
