@@ -38,7 +38,7 @@ OUT_CSV = REPO_ROOT / "reports" / "llm_vibes.csv"
 OUT_MD = REPO_ROOT / "reports" / "llm_summary.md"
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-DEFAULT_MODEL = "qwen3:4b"
+DEFAULT_MODEL = "qwen2.5:3b"
 
 
 SYSTEM_PROMPT = """You are a careful music analyst. Given song lyrics, produce a brief summary and vibe label as JSON.
