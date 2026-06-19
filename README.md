@@ -21,7 +21,8 @@ v1.4](https://github.com/sagesolar/Corpus-of-Taylor-Swift).
 | `analyze/section_analysis.py` | Phase 3 — reads the per-section CSV, summarises section-level patterns. Produces `reports/section_summary.md`. |
 | `analyze/vocabulary.py` | Phase 4 — re-tokenizes lyrics and joins with CoTS word-details (CEFR, OEC rank, frequency band). Produces `reports/vocabulary_per_song.csv` and `reports/vocabulary_summary.md`. |
 | `analyze/similarity.py` | Phase 5 — encodes lyrics with `all-MiniLM-L6-v2` and finds top-K most similar songs by cosine similarity. Produces `reports/song_similarity.csv` and `reports/similarity_summary.md`. |
-| `analyze/vibes.py` | Phase 6 (lightweight) — K-means clusters on the cached embeddings. Produces `reports/song_vibes.csv` and `reports/vibes_summary.md`. |
+| `analyze/vibes.py` | Phase 6a (lightweight) — K-means clusters on the cached embeddings. Produces `reports/song_vibes.csv` and `reports/vibes_summary.md`. |
+| `analyze/llm_vibes.py` | Phase 6b (full LLM pass) — calls ollama (`qwen2.5:3b` default) for per-song summary + vibe label. Produces `reports/llm_vibes.csv` and `reports/llm_summary.md`. |
 | `analyze/dashboard.py` | Phase 7 — combines phases 2-6 into a self-contained interactive HTML report (`reports/dashboard.html`, ~100 KB, plotly.js via CDN). |
 | `reports/dashboard.html` | Phase 7 — interactive dashboard (committed). Open in any browser. |
 | `reports/sentiment_summary.md` | Human-readable phase-2 findings (per-album, model disagreements, top/bottom songs). **Committed.** |

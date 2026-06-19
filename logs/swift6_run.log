@@ -1,0 +1,52 @@
+[info] processing 244 songs with model=qwen2.5:3b
+  [  5/244] Cold As You                     lat=2.3s  avg=2.5s  ETA=10.0min  fails=0
+  [ 10/244] Mary's Song (Oh My My My)       lat=13.1s  avg=7.0s  ETA=27.4min  fails=0
+  [ 15/244] Fearless                        lat=13.5s  avg=8.8s  ETA=33.5min  fails=0
+  [ 20/244] You Belong With Me              lat=16.7s  avg=10.6s  ETA=39.4min  fails=0
+  [ 25/244] Forever & Always                lat=17.0s  avg=11.4s  ETA=41.6min  fails=0
+  [ 30/244] Come In With The Rain           lat=10.4s  avg=11.8s  ETA=42.2min  fails=0
+  [ 35/244] Mr. Perfectly Fine              lat=19.5s  avg=12.2s  ETA=42.5min  fails=0
+  [ 40/244] Mine                            lat=16.1s  avg=12.3s  ETA=42.0min  fails=0
+  [ 45/244] Mean                            lat=16.6s  avg=12.8s  ETA=42.3min  fails=0
+  [ 50/244] Innocent                        lat=13.1s  avg=13.2s  ETA=42.8min  fails=0
+  [ 55/244] Superman                        lat=15.7s  avg=13.4s  ETA=42.1min  fails=0
+  [ 60/244] Foolish One                     lat=19.1s  avg=13.6s  ETA=41.6min  fails=0
+  [ 65/244] I Knew You Were Trouble         lat=17.4s  avg=13.7s  ETA=40.8min  fails=0
+  [ 70/244] The Last Time                   lat=18.5s  avg=13.9s  ETA=40.3min  fails=0
+  [ 75/244] Starlight                       lat=17.7s  avg=14.0s  ETA=39.4min  fails=0
+  [ 80/244] Ronan                           lat=12.8s  avg=14.0s  ETA=38.3min  fails=0
+  [ 85/244] I Bet You Think About Me        lat=17.3s  avg=14.2s  ETA=37.7min  fails=0
+  [ 90/244] Welcome To New York             lat=15.7s  avg=14.5s  ETA=37.1min  fails=0
+  [ 95/244] Shake It Off                    lat=27.2s  avg=14.9s  ETA=36.9min  fails=0
+  [100/244] This Love                       lat=18.4s  avg=15.1s  ETA=36.3min  fails=0
+  [105/244] New Romantics                   lat=21.1s  avg=15.2s  ETA=35.3min  fails=0
+  [110/244] Is It Over Now?                 lat=19.5s  avg=15.3s  ETA=34.1min  fails=0
+  [115/244] Don't Blame Me                  lat=22.8s  avg=15.6s  ETA=33.6min  fails=0
+  [120/244] Getaway Car                     lat=24.5s  avg=15.9s  ETA=32.8min  fails=0
+  [125/244] Call It What You Want           lat=22.2s  avg=16.1s  ETA=31.9min  fails=0
+  [130/244] The Man                         lat=18.8s  avg=16.1s  ETA=30.5min  fails=0
+  [135/244] Cornelia Street                 lat=17.0s  avg=16.2s  ETA=29.4min  fails=0
+  [140/244] You Need To Calm Down           lat=17.7s  avg=16.2s  ETA=28.0min  fails=0
+  [145/244] Willow                          lat=17.0s  avg=16.2s  ETA=26.8min  fails=0
+  [150/244] No Body, No Crime               lat=16.8s  avg=16.2s  ETA=25.3min  fails=0
+  [155/244] Cowboy Like Me                  lat=14.3s  avg=16.2s  ETA=24.0min  fails=0
+  [160/244] Right Where You Left Me         lat=17.1s  avg=16.1s  ETA=22.6min  fails=0
+  [165/244] Exile                           lat=19.1s  avg=16.1s  ETA=21.2min  fails=0
+  [170/244] This Is Me Trying               lat=11.5s  avg=16.0s  ETA=19.8min  fails=0
+  [175/244] Betty                           lat=19.1s  avg=16.0s  ETA=18.3min  fails=0
+  [180/244] Maroon                          lat=15.5s  avg=15.9s  ETA=16.9min  fails=0
+  [185/244] Vigilante Shit                  lat=12.3s  avg=15.8s  ETA=15.6min  fails=0
+  [190/244] Mastermind                      lat=14.5s  avg=15.8s  ETA=14.2min  fails=0
+  [195/244] Glitch                          lat=12.1s  avg=15.8s  ETA=12.9min  fails=0
+  [200/244] Fortnight                       lat=14.4s  avg=15.8s  ETA=11.6min  fails=0
+  [205/244] But Daddy I Love Him            lat=25.1s  avg=15.9s  ETA=10.3min  fails=0
+  [210/244] I Can Fix Him (No Really I Can  lat=11.9s  avg=15.9s  ETA=9.0min  fails=0
+  [215/244] Clara Bow                       lat=12.3s  avg=15.9s  ETA=7.7min  fails=0
+  [220/244] How Did It End?                 lat=12.3s  avg=15.9s  ETA=6.3min  fails=0
+  [225/244] The Prophecy                    lat=14.8s  avg=15.8s  ETA=5.0min  fails=0
+  [230/244] The Manuscript                  lat=12.1s  avg=15.8s  ETA=3.7min  fails=0
+  [235/244] Eldest Daughter                 lat=16.0s  avg=15.9s  ETA=2.4min  fails=0
+  [240/244] Cancelled!                      lat=17.8s  avg=15.9s  ETA=1.1min  fails=0
+  [244/244] Only The Young                  lat=13.4s  avg=15.9s  ETA=0.0min  fails=0
+[ok] wrote reports/llm_vibes.csv (244 rows, 0 failed)
+[ok] wrote reports/llm_summary.md (60 lines)
