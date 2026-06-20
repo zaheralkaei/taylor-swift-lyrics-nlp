@@ -98,17 +98,38 @@ def compute_textblob(text: str) -> dict:
     return {"tb_polarity": b.polarity, "tb_subjectivity": b.subjectivity}
 
 
-def compute_bert(text: str, tokenizer, model, device) -> dict:
-    """distilbert-sst2: returns positive/negative probabilities."""
+def compute_bert(text: str, tokenizer, model, device, chunk_tokens: int = 480) -> dict:
+    """distilbert-sst2: returns positive/negative probabilities.
+
+    For texts longer than 512 tokens (the model's max), use chunk-and-mean-pool:
+    split into ~480-token overlapping chunks and average the per-chunk softmax
+    probabilities. This is methodologically cleaner than silent truncation
+    (which biases bert_pos toward verse/intro sentiment for long songs).
+    """
     if not text:
         return {"bert_pos": None, "bert_neg": None}
     import torch
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    with torch.no_grad():
-        logits = model(**inputs).logits
-    probs = torch.softmax(logits, dim=-1)[0].cpu().tolist()
-    return {"bert_neg": float(probs[0]), "bert_pos": float(probs[1])}
+    enc = tokenizer(text, return_tensors="pt", truncation=False)
+    ids = enc["input_ids"][0]
+    n_tokens = len(ids)
+    if n_tokens <= 512:
+        inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        with torch.no_grad():
+            logits = model(**inputs).logits
+        probs = torch.softmax(logits, dim=-1)[0].cpu().tolist()
+        return {"bert_neg": float(probs[0]), "bert_pos": float(probs[1])}
+    # mean-pool over chunks
+    all_probs = []
+    stride = chunk_tokens  # non-overlapping chunks
+    for start in range(0, n_tokens, stride):
+        end = min(start + 512, n_tokens)
+        chunk_ids = ids[start:end].unsqueeze(0).to(device)
+        with torch.no_grad():
+            logits = model(input_ids=chunk_ids).logits
+        all_probs.append(torch.softmax(logits, dim=-1)[0].cpu())
+    mean_probs = torch.stack(all_probs).mean(dim=0).tolist()
+    return {"bert_neg": float(mean_probs[0]), "bert_pos": float(mean_probs[1])}
 
 
 # (compute_roberta_emotion was removed 2026-06-18 — model was too noisy on lyrics.
@@ -206,7 +227,7 @@ def main() -> int:
     print("=" * 60)
     print("[info] loading model (downloads ~250 MB on first run) ...")
     t0 = time.time()
-    from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForSequenceClassification
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification
     import torch
     bert_name = "distilbert-base-uncased-finetuned-sst-2-english"
     bert_tok = AutoTokenizer.from_pretrained(bert_name)
@@ -235,20 +256,17 @@ def main() -> int:
     # also score each section with BERT so per-section analysis (verse vs chorus,
     # verse->chorus jump) has the same neural signal we trust at the song level.
     print("\n[info] scoring each section with DistilBERT (per-section) ...")
-    # index section rows by (song_idx, section_name) so we can find them later
+    # build (song_idx, section_name) -> sec_row index once (avoids O(n^2) inner search)
     sec_index: dict[tuple[int, str], dict] = {}
-    for i, s in enumerate(songs):
-        key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"
-        lines = lyrics_for_song(key, lyrics_by_song)
-        for section in SECTION_GROUPS:
-            sec_text = section_text(lines, section)
-            if not sec_text:
-                continue
-            for sr in per_section_rows:
-                if sr["AlbumCode"] == s["AlbumCode"] and sr["TrackNumber"] == s["TrackNumber"] \
-                   and sr["Title"] == s["Title"] and sr["Section"] == section:
-                    sec_index[(i, section)] = sr
-                    break
+    for sr in per_section_rows:
+        # find the song_idx by matching AlbumCode + TrackNumber + Title
+        # (search songs list once per row, but only as a one-time cost)
+        for i, s in enumerate(songs):
+            if (sr["AlbumCode"] == s["AlbumCode"]
+                and sr["TrackNumber"] == s["TrackNumber"]
+                and sr["Title"] == s["Title"]):
+                sec_index[(i, sr["Section"])] = sr
+                break
 
     for i, s in enumerate(songs):
         key = f"{s['AlbumCode']}:{int(s['TrackNumber']):02d}:{s['Title']}"

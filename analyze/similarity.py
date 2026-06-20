@@ -206,7 +206,8 @@ def main() -> int:
     L.append(f"Of {len(song_records)} songs, **{cross}** ({pct:.0f}%) have their nearest")
     L.append(f"neighbor from a *different* album; {same} ({100-pct:.0f}%) from the same album.")
     L.append("")
-    L.append("**Caveat on the 'shared lyrical pool' interpretation**: this 86%")
+    L.append("**Caveat on the 'shared lyrical pool' interpretation**: this "
+                f"{pct:.0f}%")
     L.append("figure is consistent with at least three explanations:")
     L.append("(1) Swift genuinely reuses lyrical themes across albums (the story we")
     L.append("want to tell); (2) most songs share a large common-English core of")

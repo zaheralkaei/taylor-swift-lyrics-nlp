@@ -92,6 +92,8 @@ def main() -> int:
     print(f"[info] {len(song_records)} songs")
 
     # ----- embeddings: load cache or recompute -----
+    cache_ok = False
+    embeddings = None
     if EMBED_CACHE.exists() and not args.recompute_embeddings:
         print(f"[info] loading cached embeddings from {EMBED_CACHE.relative_to(REPO_ROOT)}")
         z = np.load(EMBED_CACHE)
@@ -99,7 +101,9 @@ def main() -> int:
         if embeddings.shape[0] != len(song_records):
             print(f"[warn] cached shape {embeddings.shape} doesn't match {len(song_records)} songs; recomputing")
             embeddings = None
-    if not (EMBED_CACHE.exists() and not args.recompute_embeddings and 'embeddings' in dir() and embeddings is not None):
+        else:
+            cache_ok = True
+    if not cache_ok:
         print(f"[info] loading model {MODEL_NAME} (~80 MB on first run) ...")
         from sentence_transformers import SentenceTransformer
         model = SentenceTransformer(MODEL_NAME)
@@ -225,31 +229,51 @@ def main() -> int:
     L.append("it's confounded with sample size.")
     L.append("")
 
-    # ---- cluster quality (round 4 audit) ----
-    L.append("## Cluster quality (round 4 audit)")
+    # ---- cluster quality (round 4 audit) — computed dynamically ----
+    from sklearn.metrics import silhouette_score, silhouette_samples, adjusted_rand_score
+    sil_mean = silhouette_score(embeddings, labels)
+    sil_per_sample = silhouette_samples(embeddings, labels)
+    sil_median = float(np.median(sil_per_sample))
+    neg_frac = float(np.mean(sil_per_sample < 0))
+    pos30_frac = float(np.mean(sil_per_sample > 0.3))
+    # stability across seeds
+    seed_labels = []
+    for s in [0, 1, 7, 13, 100, 999]:
+        km_s = KMeans(n_clusters=args.k, random_state=s, n_init=10)
+        seed_labels.append(km_s.fit_predict(embeddings))
+    aris = []
+    for i in range(1, len(seed_labels)):
+        aris.append(adjusted_rand_score(seed_labels[0], seed_labels[i]))
+    ari_min, ari_max = min(aris), max(aris)
+    # pairwise sim
+    sim_full = embeddings @ embeddings.T
+    np.fill_diagonal(sim_full, np.nan)
+    sim_mean = float(np.nanmean(sim_full))
+    sim_std = float(np.nanstd(sim_full))
+
+    L.append("## Cluster quality (computed dynamically)")
     L.append("")
-    L.append("K-means on 244 song embeddings was evaluated for cluster quality.")
-    L.append("The findings: **the clusters are weak**.")
+    L.append(f"K-means (K={args.k}, seed={args.seed}) on {embeddings.shape[0]} song embeddings:")
     L.append("")
     L.append("| Metric | Value |")
     L.append("|--------|-------|")
-    L.append("| Silhouette score (mean) | ~0.004 (essentially zero) |")
-    L.append("| Silhouette score (median) | ~0.0001 |")
-    L.append("| Fraction of songs with negative silhouette | ~50% (mis-assigned) |")
-    L.append("| Fraction of songs with silhouette > 0.3 | 0% |")
-    L.append("| ARI between K=10 clusterings at different seeds (0,1,7,13,100,999) | 0.13-0.17 (essentially random) |")
-    L.append("| Pairwise cosine similarity mean | 0.44 ± 0.10 (low variance overall) |")
+    L.append(f"| Silhouette score (mean) | {sil_mean:.4f} |")
+    L.append(f"| Silhouette score (median) | {sil_median:.4f} |")
+    L.append(f"| Fraction of songs with negative silhouette | {neg_frac*100:.1f}% |")
+    L.append(f"| Fraction of songs with silhouette > 0.3 | {pos30_frac*100:.1f}% |")
+    L.append(f"| ARI between K={args.k} clusterings at different seeds | {ari_min:.3f} to {ari_max:.3f} |")
+    L.append(f"| Pairwise cosine similarity (mean ± std) | {sim_mean:.3f} ± {sim_std:.3f} |")
     L.append("")
     L.append("**What this means**: the 384-dim sentence embeddings place all 244 songs")
     L.append("in a relatively tight region of space (all pairwise similarities are")
-    L.append("positive, mean 0.44). K-means splits this region into 10 pieces, but the")
+    L.append("positive, mean ≈ 0.4). K-means splits this region into K pieces, but the")
     L.append("pieces don't correspond to meaningful 'vibe' categories — the cluster")
     L.append("labels are arbitrary. A different random seed would give a different set")
-    L.append("of 10 clusters with the same ARI of ~0.15 against the current ones, telling")
-    L.append("a different 'story' about the same data.")
+    L.append(f"of {args.k} clusters with ARI ≈ {ari_max:.2f} against the current ones, telling")
+    L.append("a different 'story' with the same data.")
     L.append("")
     L.append("The cluster compositions (top 5 songs, dominant album) shown above are")
-    L.append("real for seed=42 but seed-dependent. The summary's within-album")
+    L.append(f"real for seed={args.seed} but seed-dependent. The summary's within-album")
     L.append("consistency % is also affected — different seeds give different ranks.")
     L.append("Treat the cluster descriptions as exploratory, not definitive.")
     L.append("")

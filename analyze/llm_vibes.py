@@ -114,8 +114,8 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--model", default=DEFAULT_MODEL, help=f"ollama model name (default {DEFAULT_MODEL})")
     p.add_argument("--limit", type=int, default=None, help="process only first N songs (pilot)")
-    p.add_argument("--max-lyrics-chars", type=int, default=4000,
-                   help="truncate lyrics at this many chars (default 4000)")
+    p.add_argument("--max-lyrics-chars", type=int, default=8000,
+                   help="truncate lyrics at this many chars (default 8000)")
     args = p.parse_args()
 
     songs = list(csv.DictReader(SONGS_CSV.open(encoding="utf-8")))

@@ -98,6 +98,26 @@ def main() -> int:
     if "Other" in albums_in_order:
         albums_in_order.remove("Other")
 
+    # compute per-album mean bert_pos dynamically for chart 1 headline
+    album_means = {}
+    for album in albums_in_order:
+        vals = [fnum(r.get("bert_pos")) for r in sent_songs if r["Album"] == album]
+        vals = [v for v in vals if v is not None]
+        if vals:
+            album_means[album] = statistics.mean(vals)
+    top_albums = sorted(album_means.items(), key=lambda x: -x[1])[:2]
+    bot_albums = sorted(album_means.items(), key=lambda x: x[1])[:2]
+    headline = (
+        f"<b>Headline (descriptive):</b> {top_albums[0][0]} ({top_albums[0][1]:.3f}) and "
+        f"{top_albums[1][0]} ({top_albums[1][1]:.3f}) average highest on DistilBERT pos; "
+        f"{bot_albums[0][0]} ({bot_albums[0][1]:.3f}) and {bot_albums[1][0]} ({bot_albums[1][1]:.3f}) "
+        f"lowest. The 'late-career breakup reckoning' interpretation is one reading of the data; "
+        f"the same shape is also consistent with 'slower songs get lower pos scores' or 'the model "
+        f"is more confident on short, hook-heavy lyrics.' Year axis uses canonical original-release "
+        f"years from album_meta.json (CoTS's year column reports Taylor's Version re-release years "
+        f"for Fearless/Red/1989/Speak Now)."
+    )
+
     for album in albums_in_order:
         rs = [r for r in sent_songs if r["Album"] == album]
         xs, ys, texts = [], [], []
@@ -214,9 +234,37 @@ def main() -> int:
             hovertemplate="%{text}<extra></extra>",
         ))
 
+    # compute section composition ranges for chart 3 subtitle
+    sec_pct_ranges = {}
+    for sec in SECTION_GROUPS:
+        ys_for_sec = []
+        for album in albums_for_chart:
+            total_chars = sum(album_section_chars[album].values())
+            if total_chars > 0:
+                pct = 100 * album_section_chars[album].get(sec, 0) / total_chars
+                ys_for_sec.append(pct)
+        if ys_for_sec:
+            sec_pct_ranges[sec] = (min(ys_for_sec), max(ys_for_sec))
+
+    chart3_subtitle_parts = []
+    if "verse" in sec_pct_ranges and "chorus" in sec_pct_ranges:
+        vc_low = sec_pct_ranges["verse"][0] + sec_pct_ranges["chorus"][0]
+        vc_high = sec_pct_ranges["verse"][1] + sec_pct_ranges["chorus"][1]
+        chart3_subtitle_parts.append(f"verses + choruses {vc_low:.0f}-{vc_high:.0f}%")
+    if "bridge" in sec_pct_ranges:
+        b_low, b_high = sec_pct_ranges["bridge"]
+        chart3_subtitle_parts.append(f"bridges {b_low:.0f}-{b_high:.0f}%")
+    if "in_out" in sec_pct_ranges:
+        io_low, io_high = sec_pct_ranges["in_out"]
+        chart3_subtitle_parts.append(f"in_out {io_low:.0f}-{io_high:.0f}%")
+    if "refrain" in sec_pct_ranges:
+        r_low, r_high = sec_pct_ranges["refrain"]
+        chart3_subtitle_parts.append(f"refrains rare ({r_low:.0f}-{r_high:.0f}%)")
+    chart3_subtitle = "% of total lyric characters per section, by album. " + "; ".join(chart3_subtitle_parts) + "."
+
     fig3.update_layout(
         barmode="stack",
-        title=dict(text="<b>Per-album section composition</b><br><sub>% of total lyric characters per section, by album. Verses + choruses dominate (~75%); bridges 10-18%; in_out 4-10%; refrains rare.</sub>", x=0.02),
+        title=dict(text=f"<b>Per-album section composition</b><br><sub>{chart3_subtitle}</sub>", x=0.02),
         xaxis_title="Album (release year order)",
         yaxis_title="% of characters",
         yaxis=dict(range=[0, 100]),
@@ -265,6 +313,20 @@ def main() -> int:
         b = fnum(r.get("bert_pos"))
         if b is not None: section_avg[r["Section"]].append(b)
 
+    # rank sections by mean bert_pos for chart 4 subtitle
+    sec_means = [(s, statistics.mean(vs)) for s, vs in section_avg.items() if vs]
+    sec_means.sort(key=lambda x: -x[1])
+    top_sec = sec_means[0]
+    chart4_subtitle = ""
+    if sec_means:
+        chart4_subtitle = (
+            f"Mean across all 244 songs. <b>{top_sec[0]} is the most positive section</b> "
+            f"on DistilBERT pos (mean {top_sec[1]:.2f}), "
+            f"above {sec_means[1][0]} ({sec_means[1][1]:.2f}) and {sec_means[2][0]} ({sec_means[2][1]:.2f}). "
+            f"Section composition depends on lyric length, which DistilBERT handles inconsistently — "
+            f"shorter sections tend to get more confident (often higher-positive) scores."
+        )
+
     sec_x = ["verse", "chorus", "bridge", "refrain", "in_out"]
     sec_y = [statistics.mean(section_avg[s]) if section_avg[s] else 0 for s in sec_x]
     sec_n = [len(section_avg[s]) for s in sec_x]
@@ -278,7 +340,7 @@ def main() -> int:
         hovertemplate="%{x}<br>mean DistilBERT pos: %{y:.3f}<br>n: %{text}<extra></extra>",
     ))
     fig5.update_layout(
-        title=dict(text="<b>Per-section sentiment (DistilBERT pos)</b><br><sub>Mean across all 244 songs. in_out scores highest on DistilBERT pos, but that's partly an artifact — intros/outros are short and simpler than the song's emotional core.</sub>", x=0.02),
+        title=dict(text=f"<b>Per-section sentiment (DistilBERT pos)</b><br><sub>{chart4_subtitle}</sub>", x=0.02),
         xaxis_title="Section",
         yaxis_title="Mean DistilBERT pos",
         yaxis=dict(range=[0, 0.7]),
@@ -288,25 +350,59 @@ def main() -> int:
 
     # ----- chart 6: top mutual pairs (table) -----
     if sim_rows:
-        mutual_pairs = []
+        # compute mutual pairs (both A and B in each other's top-5)
+        # and find the top mutual pair dynamically for the subtitle
+        n_k = 5
+        sim_by_src = {}
+        for r in sim_rows:
+            sim_by_src[(r["src_album"], r["src_track"], r["src_title"])] = r
+        mutual_top_score = 0.0
+        top_mutual = None
+        for r in sim_rows:
+            j_row = sim_by_src.get((r["n1_album"], r["n1_track"], r["n1_title"]))
+            if not j_row: continue
+            # check if r["src_title"] is in j_row's top-K
+            top5_b = [j_row[f"n{k}_title"] for k in range(1, n_k+1)]
+            if r["src_title"] in top5_b:
+                score = float(r["n1_score"])
+                if score > mutual_top_score:
+                    mutual_top_score = score
+                    top_mutual = (r["src_title"], r["src_album"], r["src_year"],
+                                  r["n1_title"], r["n1_album"], r["n1_year"])
+
+        if top_mutual:
+            chart6_subtitle = (
+                f"Both A's top-{n_k} and B's top-{n_k} lists include each other. "
+                f"Strongest pair: <b>{top_mutual[0]}</b> ({top_mutual[1]}, {top_mutual[2]}) ↔ "
+                f"<b>{top_mutual[3]}</b> ({top_mutual[4]}, {top_mutual[5]}) at similarity "
+                f"<b>{mutual_top_score:.3f}</b>."
+            )
+        else:
+            chart6_subtitle = f"Both A's top-{n_k} and B's top-{n_k} lists include each other."
+
+        # build table rows: top 15 by n1_score, mark which are mutual
+        rows_for_table = []
         for r in sim_rows:
             score = float(r["n1_score"])
-            mutual_pairs.append((score, r["src_title"], r["src_album"], r["src_year"],
-                                 r["n1_title"], r["n1_album"], r["n1_year"]))
-        mutual_pairs.sort(reverse=True)
+            j_row = sim_by_src.get((r["n1_album"], r["n1_track"], r["n1_title"]))
+            mutual = bool(j_row and r["src_title"] in [j_row[f"n{k}_title"] for k in range(1, n_k+1)])
+            rows_for_table.append((score, mutual, r["src_title"], r["src_album"], r["src_year"],
+                                   r["n1_title"], r["n1_album"], r["n1_year"]))
+        rows_for_table.sort(reverse=True, key=lambda p: p[0])
+
         fig6 = go.Figure(data=[go.Table(
             header=dict(values=["#", "Song A", "Album A", "Year A", "Song B", "Album B", "Year B", "similarity"],
                         fill_color="#2ca02c", font=dict(color="white"), align="left"),
             cells=dict(
                 values=[
                     list(range(1, 16)),
-                    [p[1] for p in mutual_pairs[:15]],
-                    [p[2] for p in mutual_pairs[:15]],
-                    [p[3] for p in mutual_pairs[:15]],
-                    [p[4] for p in mutual_pairs[:15]],
-                    [p[5] for p in mutual_pairs[:15]],
-                    [p[6] for p in mutual_pairs[:15]],
-                    [f"{p[0]:.4f}" for p in mutual_pairs[:15]],
+                    [p[2] for p in rows_for_table[:15]],
+                    [p[3] for p in rows_for_table[:15]],
+                    [p[4] for p in rows_for_table[:15]],
+                    [p[5] for p in rows_for_table[:15]],
+                    [p[6] for p in rows_for_table[:15]],
+                    [p[7] for p in rows_for_table[:15]],
+                    [f"{p[0]:.4f}" for p in rows_for_table[:15]],
                 ],
                 align="left",
                 font=dict(size=11),
@@ -314,7 +410,7 @@ def main() -> int:
             ),
         )])
         fig6.update_layout(
-            title=dict(text="<b>Top 15 mutual nearest-neighbor pairs (phase 5)</b><br><sub>Both A's top-5 and B's top-5 lists include each other. Strongest similarity signal.</sub>", x=0.02),
+            title=dict(text=f"<b>Top 15 mutual nearest-neighbor pairs (phase 5)</b><br><sub>{chart6_subtitle}</sub>", x=0.02),
             height=520, width=None,
         )
 
@@ -346,7 +442,7 @@ a { color: #2ca02c; }
 <div class="section">
   <h2>1. Career-long sentiment arc</h2>
   <p>Each point is a song. DistilBERT-SST2 positive probability — pretrained sentiment model, transferred to lyrics. Hover for song title and scores.</p>
-  <p><b>Headline (descriptive):</b> Speak Now (2010) and 1989 (2014) average highest on DistilBERT pos; TTPD (2024) and Midnights (2022) lowest. The 'late-career breakup reckoning' interpretation is one reading of the data; the same shape is also consistent with 'slower songs get lower pos scores' or 'the model is more confident on short, hook-heavy lyrics.' Year axis uses canonical original-release years from album_meta.json (CoTS's year column reports Taylor's Version re-release years for Fearless/Red/1989/Speak Now).</p>
+  <p>{headline}</p>
 """]
     html_parts.append(fig1.to_html(full_html=False, include_plotlyjs="cdn", div_id="chart1"))
     html_parts.append("</div>")
@@ -371,11 +467,11 @@ a { color: #2ca02c; }
     html_parts.append("""
 <div class="section">
   <h2>4. Per-section sentiment (phase 3)</h2>
-  <p>Mean DistilBERT pos per section across all 244 songs. Counter-intuitively, <b>bridges are the MOST positive section</b> on DistilBERT pos (0.50), not the darkest. Pop-theory claim that bridges are darker than verses doesn't hold for Swift.</p>
-""")
+  <p>Mean DistilBERT pos per section across all 244 songs. Section sentiment is sensitive to text length — short sections (intros/outros) get more confident mid-positive scores, while long sections (choruses) tend to get lower scores. See the section composition chart above for the length breakdown.</p>
+"""
+    )
     html_parts.append(fig5.to_html(full_html=False, include_plotlyjs=False, div_id="chart5"))
     html_parts.append("</div>")
-
     if vibes_rows:
         html_parts.append("""
 <div class="section">
@@ -387,11 +483,11 @@ a { color: #2ca02c; }
         html_parts.append("</div>")
 
     if sim_rows:
-        html_parts.append("""
+        html_parts.append(f"""
 <div class="section">
   <h2>6. Top mutual nearest-neighbor pairs (phase 5)</h2>
   <p>Sentence-transformer (all-MiniLM-L6-v2) song embeddings, cosine similarity top-5 nearest neighbors. Mutual pairs = both A and B list each other in their top-5.</p>
-  <p><b>Headline:</b> Top mutual pair is Back To December (Speak Now, 2010) ↔ 'Tis The Damn Season (Evermore, 2020) at 0.77. Both are quiet, regretful, winter songs about looking back.</p>
+  <p>{chart6_subtitle.replace('<b>', '<b>').replace('</b>', '</b>')}</p>
 """)
         html_parts.append(fig6.to_html(full_html=False, include_plotlyjs=False, div_id="chart6"))
         html_parts.append("</div>")

@@ -127,21 +127,34 @@ def main() -> int:
         L.append(f"| {section} | {len(vs)} | {statistics.mean(vs):+.3f} | {statistics.mean(ts):+.3f} | {statistics.mean(bs):.3f} |")
     L.append("")
     L.append("**Reading (what the data shows, not a theory)**: across all 244")
-    L.append("songs, on DistilBERT pos the section averages rank: in_out 0.534")
-    L.append("(n=175) > bridge 0.495 (n=221) > verse 0.403 (n=244) > refrain")
-    L.append("0.388 (n=9) > chorus 0.374 (n=243).")
+    L.append("songs, on DistilBERT pos the section averages rank:")
+    # dynamic ranking
+    rank_rows = []
+    for section in ["verse", "chorus", "bridge", "refrain", "in_out"]:
+        if section in by_section:
+            vs = [x for x in by_section[section]["vader"] if x is not None]
+            ts = [x for x in by_section[section]["tb"] if x is not None]
+            bs = [x for x in by_section[section]["bert"] if x is not None]
+            if bs:
+                rank_rows.append((statistics.mean(bs), section, len(bs)))
+    rank_rows.sort(reverse=True)
+    rank_strs = [f"{s} {m:.3f} (n={n})" for m, s, n in rank_rows]
+    L.append(" > ".join(rank_strs) + ".")
     L.append("")
-    L.append("(With the paren-strip fix, 4 more songs' in_out rows are present:")
-    L.append("Castles Crumbling 0.010, All You Had To Do Was Stay 0.493,")
-    L.append("Invisible String 0.020, How Did It End? 0.013. Without these 4 the")
-    L.append("in_out mean would be 0.549.)")
-    L.append("")
-    L.append("On VADER the rank is different: chorus +0.362 (highest) >")
-    L.append("verse +0.247 > in_out +0.220 > bridge +0.197 > refrain +0.017.")
-    L.append("Choruses win on VADER because the model's lexicon treats")
+    # show VADER rank too
+    rank_vader = []
+    for section in ["verse", "chorus", "bridge", "refrain", "in_out"]:
+        if section in by_section:
+            vs = [x for x in by_section[section]["vader"] if x is not None]
+            if vs:
+                rank_vader.append((statistics.mean(vs), section, len(vs)))
+    rank_vader.sort(reverse=True)
+    L.append("On VADER the rank is:")
+    L.append(" > ".join(f"{s} {m:+.3f} (n={n})" for m, s, n in rank_vader) + ".")
+    L.append("Choruses tend to win on VADER because the model's lexicon treats")
     L.append("hook words ('love', 'want', 'stay') as positive and those words")
     L.append("cluster in choruses. DistilBERT doesn't see that lexical pattern")
-    L.append("as strongly — on DistilBERT, choruses drop below verses.")
+    L.append("as strongly — on DistilBERT, choruses often drop below verses.")
     L.append("")
     L.append("The in_out section's higher DistilBERT pos likely reflects its")
     L.append("narrow content: intros often set a positive scene, outros often")
