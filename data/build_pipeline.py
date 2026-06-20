@@ -154,7 +154,9 @@ def main() -> int:
         s["ChorusLines"]    = sc.get("Chorus", 0)
         s["BridgeLines"]    = sc.get("Bridge", 0)
         s["RefrainLines"]   = sc.get("Refrain", 0)
-        s["InOutLines"]     = sc.get("Intro", 0) + sc.get("Outro", 0) + sc.get("Spoken Outro", 0)
+        # CoTS uses 'IntroOutro' as a single SongPart (not separate Intro/Outro tags).
+        # Match all three possible names so the count is robust to CoTS updates.
+        s["InOutLines"]     = sc.get("IntroOutro", 0) + sc.get("Intro", 0) + sc.get("Outro", 0) + sc.get("Spoken Outro", 0)
         s["OtherLines"]     = s["LyricLines"] - s["VerseLines"] - s["ChorusLines"] - s["BridgeLines"] - s["RefrainLines"] - s["InOutLines"]
         s["HasSectionTags"] = s["LyricLines"] > 0
 

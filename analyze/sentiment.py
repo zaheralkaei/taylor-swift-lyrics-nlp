@@ -49,7 +49,9 @@ SECTION_GROUPS = {
     "chorus":  ["Chorus"],
     "bridge":  ["Bridge"],
     "refrain": ["Refrain"],
-    "in_out":  ["Intro", "Outro", "Spoken Outro"],
+    # CoTS uses the merged key 'IntroOutro' (not separate 'Intro'/'Outro' tags),
+    # so we map all three possible names to keep working across CoTS versions.
+    "in_out":  ["IntroOutro", "Intro", "Outro", "Spoken Outro"],
 }
 
 
