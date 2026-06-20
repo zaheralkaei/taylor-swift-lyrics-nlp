@@ -1,0 +1,13 @@
+{
+  "k": 10,
+  "seed": 42,
+  "n_songs": 244,
+  "silhouette_mean": 0.003816528944298625,
+  "silhouette_median": 5.466280708787963e-05,
+  "frac_negative_silhouette": 0.4959016393442623,
+  "frac_silhouette_gt_0_3": 0.0,
+  "ari_min": 0.1309478164330582,
+  "ari_max": 0.20434735495013237,
+  "pairwise_sim_mean": 0.4369770884513855,
+  "pairwise_sim_std": 0.10158707201480865
+}

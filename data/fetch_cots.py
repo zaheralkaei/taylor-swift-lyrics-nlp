@@ -34,6 +34,17 @@ FILES = [
 
 BASE_URL = "https://raw.githubusercontent.com/sagesolar/Corpus-of-Taylor-Swift/main"
 
+# CoTS v1.4 SHA256 hashes — pin to upstream's main branch as of 2026-06-20.
+# Round 9 audit fix: prevents silent data drift if upstream changes.
+# Re-generate with `python data/fetch_cots.py --print-sha256` after a
+# deliberate upstream update.
+EXPECTED_SHA256 = {
+    "tsv/cots-album-details.tsv":    "6f5386b58e0cf311745bbc4eb0d27be271a6337ab88a30a746ca8ebfac16a5be",
+    "tsv/cots-song-details.tsv":     "935823b8b008b81d383a1c22b4b1fa8e38fb400051d30b7dc7ab24ee5c044444",
+    "tsv/cots-word-details.tsv":     "a224ef8f0fe873c6d558508a0171b4d417132bae171b52a13ee11737e097b16b",
+    "lyrics/album-song-lyrics.json": "7da321db60722143a1241f836d75fc218008b023e150fdb75333560555c9eb62",
+}
+
 # GPL-3.0 banner shown to anyone running the script.
 LICENSE_BANNER = """\
 NOTICE: Corpus of Taylor Swift (CoTS) v1.4 by sagesolar is licensed under
@@ -58,18 +69,31 @@ def expected_size(path: str) -> int:
 
 
 def download(path: str, dest: Path) -> int:
-    """Download a single file. Returns bytes downloaded."""
+    """Download a single file. Returns bytes downloaded.
+
+    Verifies SHA256 against EXPECTED_SHA256[path] after download (round 9
+    audit fix). Refuses to write a file whose hash doesn't match the pinned
+    upstream snapshot — prevents silent data drift.
+    """
     url = f"{BASE_URL}/{path}"
     expected = expected_size(path)
     print(f"  fetching {path} ...", end=" ", flush=True)
     with urllib.request.urlopen(url, timeout=60) as resp:
         data = resp.read()
+    actual = len(data)
+    sha = hashlib.sha256(data).hexdigest()
+    expected_sha = EXPECTED_SHA256.get(path)
+    if expected_sha and sha != expected_sha:
+        print(f"\n  [FAIL] SHA mismatch for {path}", file=sys.stderr)
+        print(f"         expected: {expected_sha}", file=sys.stderr)
+        print(f"         got:      {sha}", file=sys.stderr)
+        print(f"         data has changed since 2026-06-20 snapshot.", file=sys.stderr)
+        print(f"         Inspect the diff upstream. To override, edit EXPECTED_SHA256 in fetch_cots.py.", file=sys.stderr)
+        return -1
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(data)
-    actual = len(data)
-    sha = hashlib.sha256(data).hexdigest()[:16]
-    status = "ok" if expected == 0 or expected == actual else f"size mismatch (expected {expected})"
-    print(f"{actual:>10,} bytes  sha256:{sha}  {status}")
+    size_status = "ok" if expected == 0 or expected == actual else f"size mismatch (expected {expected})"
+    print(f"{actual:>10,} bytes  sha256:{sha[:16]}  {size_status}")
     return actual
 
 
@@ -77,10 +101,48 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--force", action="store_true", help="re-download even if file exists")
     parser.add_argument("--check", action="store_true", help="check existence + size only")
+    parser.add_argument("--verify-sha256", action="store_true",
+                       help="check existing files against pinned EXPECTED_SHA256 (no downloads)")
+    parser.add_argument("--print-sha256", action="store_true",
+                       help="print current upstream file SHAs (one-time, for pinning)")
     args = parser.parse_args()
+
+    if args.print_sha256:
+        # print full SHAs for the current upstream snapshot — use this output
+        # to update EXPECTED_SHA256 above after a deliberate upstream bump
+        for path, desc in FILES:
+            url = f"{BASE_URL}/{path}"
+            try:
+                with urllib.request.urlopen(url, timeout=30) as resp:
+                    data = resp.read()
+                sha = hashlib.sha256(data).hexdigest()
+                print(f"  \"{path}\": \"{sha}\",")
+            except Exception as e:
+                print(f"  [error] could not fetch {path}: {e}", file=sys.stderr)
+        return 0
 
     print(LICENSE_BANNER)
     print(f"destination: {DEST_DIR.relative_to(REPO_ROOT)}/\n")
+
+    if args.verify_sha256:
+        print("[verify-sha256 mode — comparing cached files against pinned SHAs]\n")
+        ok = True
+        for path, desc in FILES:
+            dest = DEST_DIR / Path(path).name
+            expected_sha = EXPECTED_SHA256.get(path)
+            if not dest.exists():
+                print(f"  ✗ {dest.name:<40} MISSING")
+                ok = False
+                continue
+            actual_sha = hashlib.sha256(dest.read_bytes()).hexdigest()
+            if expected_sha and actual_sha == expected_sha:
+                print(f"  ✓ {dest.name:<40} sha256 matches")
+            else:
+                print(f"  ✗ {dest.name:<40} sha256 MISMATCH")
+                print(f"      expected: {expected_sha}")
+                print(f"      got:      {actual_sha}")
+                ok = False
+        return 0 if ok else 1
 
     if args.check:
         print("[check mode — no downloads]")
@@ -101,7 +163,10 @@ def main() -> int:
             print(f"  ✓ {dest.name:<40} {size:>10,} bytes  (cached, use --force to re-fetch)")
             total += size
             continue
-        total += download(path, dest)
+        result = download(path, dest)
+        if result < 0:
+            return 1
+        total += result
 
     print(f"\n[ok] {total:,} bytes total in {DEST_DIR.relative_to(REPO_ROOT)}/")
     print(f"[next] run `python data/build_pipeline.py` to construct the analysis-ready dataset")

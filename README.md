@@ -118,17 +118,32 @@ Per-phase summaries (committed):
 Reproducing everything from scratch (assumes data/raw/cots/ is empty):
 
 ```bash
-python data/fetch_cots.py           # downloads CoTS (~2.3 MB)
-python data/build_pipeline.py       # builds songs.csv + albums.csv + lyrics_by_section.json
-python analyze/sentiment.py         # phase 2 (~3 min CPU)
+# Step 1: fetch + verify CoTS (round 9 audit — SHA256 pinned)
+python data/fetch_cots.py --verify-sha256   # verify cached files
+python data/fetch_cots.py --print-sha256     # print upstream SHAs after a deliberate update
+python data/fetch_cots.py                   # download (~2.3 MB)
+
+# Step 2: build pipeline (runs in seconds)
+python data/build_pipeline.py
+
+# Step 3: each analysis phase
+python analyze/sentiment.py         # phase 2 (~3 min CPU on ai-laptop)
 python analyze/section_analysis.py  # phase 3 (instant)
+python analyze/regen_sentiment_summary.py  # regen sentiment_summary.md
 python analyze/vocabulary.py        # phase 4 (~30 sec CPU)
 python analyze/similarity.py        # phase 5 (~10 sec CPU after model download)
 python analyze/vibes.py             # phase 6 (instant, reuses embeddings)
+python analyze/llm_vibes.py         # phase 6b (LLM pass, ~70 min on ai-laptop, seed=42)
 python analyze/dashboard.py         # phase 7 (instant)
+
+# Step 4: verify reproducibility
+python data/fetch_cots.py --verify-sha256   # all 4 files match pinned SHAs
 ```
 
-Each phase will land as a separate commit when ready.
+Each phase is committed separately so the corpus, analysis, and dashboard
+can be reproduced from a clean clone. Source files have been SHA-hashed;
+combined source hash for the committed state is in this README (see
+`docs/SOURCE_HASH.txt`).
 
 ## Legacy
 

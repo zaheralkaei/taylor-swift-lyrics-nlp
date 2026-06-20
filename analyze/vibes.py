@@ -48,6 +48,7 @@ SONGS_CSV = REPO_ROOT / "data" / "processed" / "songs.csv"
 
 OUT_CSV = REPO_ROOT / "reports" / "song_vibes.csv"
 OUT_MD = REPO_ROOT / "reports" / "vibes_summary.md"
+OUT_QUALITY = REPO_ROOT / "reports" / "vibes_quality.json"  # read by dashboard.py
 EMBED_CACHE = REPO_ROOT / "data" / "processed" / "song_embeddings.npz"
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
@@ -294,6 +295,23 @@ def main() -> int:
 
     OUT_MD.write_text("\n".join(L) + "\n", encoding="utf-8")
     print(f"[ok] wrote {OUT_MD.relative_to(REPO_ROOT)} ({len(L)} lines)")
+
+    # write cluster quality metrics to JSON for dashboard.py to read
+    quality = {
+        "k": int(args.k),
+        "seed": int(args.seed),
+        "n_songs": int(embeddings.shape[0]),
+        "silhouette_mean": float(sil_mean),
+        "silhouette_median": float(sil_median),
+        "frac_negative_silhouette": float(neg_frac),
+        "frac_silhouette_gt_0_3": float(pos30_frac),
+        "ari_min": float(ari_min),
+        "ari_max": float(ari_max),
+        "pairwise_sim_mean": float(sim_mean),
+        "pairwise_sim_std": float(sim_std),
+    }
+    OUT_QUALITY.write_text(json.dumps(quality, indent=2) + "\n", encoding="utf-8")
+    print(f"[ok] wrote {OUT_QUALITY.relative_to(REPO_ROOT)}")
 
     # console headline
     print(f"\n=== headline ===")

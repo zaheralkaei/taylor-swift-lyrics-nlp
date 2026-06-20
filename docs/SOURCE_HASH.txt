@@ -1,0 +1,28 @@
+# Source file hashes for the committed state
+
+Combined SHA256: 8bc2b62408055cf0
+Generated: 2026-06-20 (commit b7323b0)
+
+Run `python scripts/hash_sources.py` to regenerate.
+
+Individual file hashes (first 16 chars of SHA256):
+
+  20f3a0ed42cf3558  analyze\__init__.py
+  adb7d95b09041146  analyze\dashboard.py
+  475bc5637f300f09  analyze\llm_vibes.py
+  a877c456fa78f915  analyze\regen_sentiment_summary.py
+  21628903a235dcd3  analyze\section_analysis.py
+  5b25a6d8042b26de  analyze\sentiment.py
+  f3556be3a58e8d63  analyze\setup.py
+  bd375242379e9ed1  analyze\similarity.py
+  b1f90e53cc9bbd4a  analyze\vibes.py
+  271ca8414a12ecac  analyze\vocabulary.py
+  a1704b6d442be800  data\album_meta.json
+  668ec229fadefc78  data\archive\song_to_album.json
+  ddce15280c3d2948  data\build_pipeline.py
+  5e5b263c8ff9406b  data\fetch_cots.py
+  61ee351049a20f9b  data\processed\lyrics_by_section.json
+  7da321db60722143  data\raw\cots\album-song-lyrics.json
+  6f5386b58e0cf311  data\raw\cots\cots-album-details.tsv
+  935823b8b008b81d  data\raw\cots\cots-song-details.tsv
+  a224ef8f0fe873c6  data\raw\cots\cots-word-details.tsv

@@ -273,6 +273,25 @@ def main() -> int:
         template="plotly_white",
     )
 
+    # load cluster quality metrics (silhouette, ARI) computed by vibes.py
+    # — round 9 audit fix: replaces hardcoded "silhouette ~0, ARI ~0.15"
+    vibes_quality = None
+    _vq_path = REPO_ROOT / "reports" / "vibes_quality.json"
+    if _vq_path.exists():
+        try:
+            vibes_quality = json.loads(_vq_path.read_text(encoding="utf-8"))
+        except Exception as _e:
+            print(f"[warn] could not load vibes_quality.json: {_e}", file=__import__("sys").stderr)
+    # build the chart-4 plotly subtitle dynamically
+    if vibes_quality:
+        vibes_quality_caveat = (
+            f"Round 9 audit: K={vibes_quality['k']} silhouette={vibes_quality['silhouette_mean']:.3f}, "
+            f"ARI across seeds {vibes_quality['ari_min']:.2f}-{vibes_quality['ari_max']:.2f} — "
+            f"clusters are weak, see caveat below."
+        )
+    else:
+        vibes_quality_caveat = "Cluster quality metrics unavailable (run analyze/vibes.py)."
+
     # ----- chart 4: vibe cluster composition (phase 6) -----
     if vibes_rows:
         cluster_album = defaultdict(lambda: Counter())
@@ -298,7 +317,7 @@ def main() -> int:
             fig4.update_yaxes(tickfont=dict(size=8), row=row, col=col)
 
         fig4.update_layout(
-            title=dict(text="<b>Vibe clusters: album composition (phase 6)</b><br><sub>10 K-means clusters on the sentence embeddings. Each cluster shows which albums its songs come from. Round 4 audit: silhouette ~0, ARI across seeds ~0.15 — clusters are weak, see the caveat below the chart.</sub>",
+            title=dict(text=f"<b>Vibe clusters: album composition (phase 6)</b><br><sub>10 K-means clusters on the sentence embeddings. Each cluster shows which albums its songs come from.<br>{vibes_quality_caveat}</sub>",
                        x=0.02, y=0.98, yanchor="top"),
             height=720, width=None,
             template="plotly_white",
@@ -477,7 +496,7 @@ a { color: #2ca02c; }
 <div class="section">
   <h2>5. Vibe clusters (phase 6a — K-means)</h2>
   <p>K-means (K=10) on the 384-dim sentence embeddings. Each cluster shows which albums its songs come from.</p>
-  <p><b>Round 4 audit caveat:</b> silhouette score for K=10 is essentially zero (~0.004). Cluster assignments are unstable across random seeds (ARI ~0.15). About 50% of songs are on average closer to a different cluster's centroid than their own. The 'clusters' are real for seed=42 but a different seed would give a different 'story' with the same data — see <code>reports/vibes_summary.md</code> for the cluster quality numbers.</p>
+  <p><b>Cluster quality (round 9 audit):</b> silhouette score and ARI computed dynamically by <code>analyze/vibes.py</code>. See chart subtitle above for current values. Cluster assignments remain unstable across random seeds — the labels you see here are seed=42 only.</p>
 """)
         html_parts.append(fig4.to_html(full_html=False, include_plotlyjs=False, div_id="chart4"))
         html_parts.append("</div>")
