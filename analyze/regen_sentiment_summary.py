@@ -106,18 +106,8 @@ def main() -> int:
         b = statistics.mean([fnum(r["bert_pos"]) for r in a if fnum(r["bert_pos"]) is not None])
         L.append(f"| {album} | {y_str} | {len(a)} | {v:+.3f} | {t:+.3f} | {b:.3f} |")
     L.append("")
-    L.append("**Per-album reading (DistilBERT pos)**: speak Now (2010) has the highest")
-    L.append("mean (0.497), followed by 1989 (0.443) and Lover (0.441). TTPD (2024) is")
-    L.append("lowest (0.115), with Midnights (2022) second-lowest (0.177).")
     L.append("")
-    L.append("**Caveat**: this ranking comes from album means of 12-31 song-level")
-    L.append("predictions each. With these sample sizes, the standard error of the")
-    L.append("mean is roughly ±0.05-0.12 on the bert_pos scale (larger for albums")
-    L.append("with more variance, smaller for ones with more consistent songs).")
-    L.append("Differences of less than ~0.15-0.20 between adjacent albums are not")
-    L.append("statistically meaningful from this sample. The big gap between the")
-    L.append("top (Speak Now 0.50) and bottom (TTPD 0.12) is real; smaller")
-    L.append("re-orderings within the middle of the ranking are not.")
+    L.append("")
     L.append("")
     # add a row with std error per album so the caveat is grounded in numbers
     L.append("Per-album bert_pos with standard error of the mean:")
@@ -137,6 +127,32 @@ def main() -> int:
         ci_lo = m - 1.96*sem
         ci_hi = m + 1.96*sem
         L.append(f"| {album} | {len(vs)} | {m:.3f} | ±{sem:.3f} | [{ci_lo:.3f}, {ci_hi:.3f}] |")
+    L.append("")
+    # per-album ranking + caveat (computed dynamically — round 7 audit fix)
+    album_means_no_other = {a: statistics.mean(by_album_for_ci[a]) for a in by_album_for_ci if a != "Other"}
+    sorted_albums_by_b = sorted(album_means_no_other.items(), key=lambda x: -x[1])
+    top_album = sorted_albums_by_b[0]
+    second_album = sorted_albums_by_b[1]
+    third_album = sorted_albums_by_b[2]
+    bot_album = sorted_albums_by_b[-1]
+    second_bot = sorted_albums_by_b[-2]
+    sems_for_text = [statistics.stdev(by_album_for_ci[a]) / (len(by_album_for_ci[a])**0.5)
+                       for a in by_album_for_ci if a != "Other" and len(by_album_for_ci[a]) > 1]
+    sem_min, sem_max = min(sems_for_text), max(sems_for_text)
+    L.append("**Per-album reading (DistilBERT pos)**: "
+            f"{top_album[0]} ({int(year_of.get(top_album[0], 0))}) has the highest mean ({top_album[1]:.3f}), "
+            f"followed by {second_album[0]} ({second_album[1]:.3f}) and {third_album[0]} ({third_album[1]:.3f}). "
+            f"{bot_album[0]} ({int(year_of.get(bot_album[0], 0))}) is lowest ({bot_album[1]:.3f}), "
+            f"with {second_bot[0]} ({second_bot[1]:.3f}) second-lowest.")
+    L.append("")
+    L.append("**Caveat**: this ranking comes from album means of 12-31 song-level")
+    L.append("predictions each. With these sample sizes, the standard error of the")
+    L.append(f"mean is ±{sem_min:.2f}-±{sem_max:.2f} on the bert_pos scale (computed across all 12 albums; larger for albums")
+    L.append("with more variance, smaller for ones with more consistent songs).")
+    L.append("Differences of less than ~0.15-0.20 between adjacent albums are not")
+    L.append("statistically meaningful from this sample. The big gap between the")
+    L.append(f"top ({top_album[0]} {top_album[1]:.2f}) and bottom ({bot_album[0]} {bot_album[1]:.2f}) is real; smaller")
+    L.append("re-orderings within the middle of the ranking are not.")
     L.append("")
     L.append("**Time trend**: album means do NOT form a clean monotonic career arc.")
     L.append("The early career (TSW-Fearless-Speak Now) sits at the top, then a dip")

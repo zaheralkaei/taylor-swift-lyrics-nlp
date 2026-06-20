@@ -194,7 +194,8 @@ def main() -> int:
         min_album = min(j_for_headline, key=j_for_headline.get)
         L.append(f"**Largest mean jump**: {max_album} (+{j_for_headline[max_album]:.3f}).")
         L.append(f"**Smallest mean jump**: {min_album} ({j_for_headline[min_album]:+.3f}).")
-        L.append(f"  (Excluding 'Other' bucket — n=2 non-album songs, -0.466).")
+        if "Other" in album_jump_avg:
+            L.append(f"  (Excluding 'Other' bucket — n={len(album_jumps.get('Other', []))} non-album songs, {album_jump_avg['Other']:+.3f}).")
         L.append("")
 
     # ---- 3. top/bottom verse->chorus jumps (headline) ----

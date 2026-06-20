@@ -6,7 +6,7 @@ length) and the section-tagged lyrics. For each song, re-tokenizes
 the lyrics and aggregates per-word stats:
 
   - CEFR distribution: fraction of words at A1/A2/B1/B1+/B2/C1/C2
-  - Mean OEC rank (lower = rarer; OEC = Oxford English Corpus)
+  - Mean OEC rank (higher = rarer; OEC = Oxford English Corpus, rank-1 = "the", rank-10000 = median)
   - Mean frequency band (1 = top 1000, 2 = 1001-3000, ...)
   - Type-token ratio (unique words / total words)
   - Mean word length
