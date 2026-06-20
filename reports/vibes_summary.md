@@ -179,27 +179,26 @@ multiple songs in the same cluster than a 12-song album, by chance.
 This is a real signal (TTPD songs are more similar to each other) but
 it's confounded with sample size.
 
-## Cluster quality (round 4 audit)
+## Cluster quality (computed dynamically)
 
-K-means on 244 song embeddings was evaluated for cluster quality.
-The findings: **the clusters are weak**.
+K-means (K=10, seed=42) on 244 song embeddings:
 
 | Metric | Value |
 |--------|-------|
-| Silhouette score (mean) | ~0.004 (essentially zero) |
-| Silhouette score (median) | ~0.0001 |
-| Fraction of songs with negative silhouette | ~50% (mis-assigned) |
-| Fraction of songs with silhouette > 0.3 | 0% |
-| ARI between K=10 clusterings at different seeds (0,1,7,13,100,999) | 0.13-0.17 (essentially random) |
-| Pairwise cosine similarity mean | 0.44 ± 0.10 (low variance overall) |
+| Silhouette score (mean) | 0.0038 |
+| Silhouette score (median) | 0.0001 |
+| Fraction of songs with negative silhouette | 49.6% |
+| Fraction of songs with silhouette > 0.3 | 0.0% |
+| ARI between K=10 clusterings at different seeds | 0.131 to 0.204 |
+| Pairwise cosine similarity (mean ± std) | 0.437 ± 0.102 |
 
 **What this means**: the 384-dim sentence embeddings place all 244 songs
 in a relatively tight region of space (all pairwise similarities are
-positive, mean 0.44). K-means splits this region into 10 pieces, but the
+positive, mean ≈ 0.4). K-means splits this region into K pieces, but the
 pieces don't correspond to meaningful 'vibe' categories — the cluster
 labels are arbitrary. A different random seed would give a different set
-of 10 clusters with the same ARI of ~0.15 against the current ones, telling
-a different 'story' about the same data.
+of 10 clusters with ARI ≈ 0.20 against the current ones, telling
+a different 'story' with the same data.
 
 The cluster compositions (top 5 songs, dominant album) shown above are
 real for seed=42 but seed-dependent. The summary's within-album

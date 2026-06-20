@@ -28,7 +28,7 @@ Mutual pairs are stronger evidence of similarity than one-way matches.
 | Cold As You | Taylor Swift | 2006 | Afterglow | Lover | 2019 | 0.7112 |
 | Haunted | Speak Now | 2010 | So It Goes... | Reputation | 2017 | 0.7084 |
 | Bye Bye Baby | Fearless | 2008 | So It Goes... | Reputation | 2017 | 0.7060 |
-| Bye Bye Baby | Fearless | 2008 | Haunted | Speak Now | 2010 | 0.7056 |
+| Bye Bye Baby | Fearless | 2008 | Haunted | Speak Now | 2010 | 0.7055 |
 | Back To December | Speak Now | 2010 | All Too Well (10 Minute Version) | Red | 2012 | 0.7034 |
 | Breathe | Fearless | 2008 | Electric Touch | Speak Now | 2010 | 0.7030 |
 | 'Tis The Damn Season | Evermore | 2020 | August | Folklore | 2020 | 0.7023 |

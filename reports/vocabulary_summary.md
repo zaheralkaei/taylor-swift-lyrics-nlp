@@ -133,28 +133,30 @@ lyric style is consistently everyday-English.
 **Same ranking by per-song mean MATTR (used in the dashboard chart 2)**:
 (compute MATTR for each song, then average per album)
 
-  TTPD (mean MATTR=0.446, n=31)
-  Folklore (mean MATTR=0.418, n=17)
-  Evermore (mean MATTR=0.385, n=17)
-  Midnights (mean MATTR=0.382, n=21)
-  Life of a Showgirl (mean MATTR=0.376, n=12)
+  MATTR-500 (window=500, falls back to TTR for songs <500 words):
+    TTPD (mean MATTR=0.446, n=31)
+    Folklore (mean MATTR=0.418, n=17)
+    Evermore (mean MATTR=0.385, n=17)
+    Midnights (mean MATTR=0.382, n=21)
+    Life of a Showgirl (mean MATTR=0.376, n=12)
 
-**Important caveat**: the two measures tell slightly different stories.
-Album-concat MATTR weights long songs more (concatenation gives them more
-tokens to look at). Per-song-mean MATTR weights songs equally regardless
-of length. Both agree on the top album (TTPD) and the bottom (1989 /
-Reputation), but the mid-rankings differ.
+  MATTR-200 (window=200, real moving average for ~98% of songs):
+    TTPD (mean MATTR=0.469, n=31)
+    Folklore (mean MATTR=0.420, n=17)
+    Evermore (mean MATTR=0.414, n=17)
+    Speak Now (mean MATTR=0.401, n=22)
+    Life of a Showgirl (mean MATTR=0.398, n=12)
 
-**Note on MATTR-500 and this corpus**: 93% of songs have
-fewer than 500 words. For these short songs the function
-falls back to plain TTR (type-token ratio = unique words / total words).
-So 'MATTR-500' on this corpus is mostly measuring whole-song TTR, not the
-moving-average behaviour the name suggests. A smaller window (e.g. 100)
-would give a more meaningful MATTR signal but loses length normalisation.
+**Important caveat**: MATTR-500 falls back to whole-song TTR for
+93% of songs (those with <500 words). MATTR-200 is a real moving-
+average for ~98% of songs and is a fairer measure of within-song
+diversity. Both measures agree on the top album (TTPD) but mid-
+rankings differ — use MATTR-200 when comparing albums.
+
 
 **Combined with phase 2**: TTPD has the
 highest MATTR (0.346) AND TTPD has the
-lowest mean DistilBERT pos (0.133). These
+lowest mean DistilBERT pos (0.153). These
 are not necessarily the same album — the join here is
 illustrative, not a strong claim about a single 'most complex'
 album.

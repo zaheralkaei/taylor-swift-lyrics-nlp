@@ -8,51 +8,52 @@ summary (≤25 words) and a 3-5-word vibe label, returned as JSON.
 
 **Stats**:
 - Songs processed: 244 (0 parse failures)
-- Avg inference latency: 15.9 sec/song
-- Total wall time: 64.7 min
+- Avg inference latency: 15.5 sec/song
+- Total wall time: 62.8 min
 
 ## Per-album vibe word cloud
 
 Most common vibe tags per album (top 8 each).
 
-- **Taylor Swift** (2006): heartbreak (8), heartfelt (5), sadness (5), romantic (4), love (2), gritty (2), reflection (2), pop (2)
-- **Fearless** (2008): heartbreak (14), sadness (8), romantic (7), pop (6), heartfelt (5), soulful (4), reflective (3), melancholy (3)
-- **Speak Now** (2010): romantic (8), heartbreak (6), pop (5), soulful (4), sadness (4), heartfelt (3), gritty (3), reflective (2)
-- **Red** (2012): heartbreak (15), sadness (10), pop (8), romantic (6), soul (3), heartfelt (3), melancholic (3), retro (3)
-- **1989** (2014): pop (7), heartbreak (5), r&b (4), sadness (4), romantic (4), melancholy (4), soul (3), retro (3)
-- **Reputation** (2017): r&b (4), pop (3), heartbreak (3), romantic (3), pop-rock (2), seduction (2), sophisticated (2), anger (2)
-- **Lover** (2019): romantic (4), soulful (4), sadness (3), melancholy (2), nostalgia (2), dark (2), r&b (2), gritty (2)
-- **Evermore** (2020): sadness (5), heartbreak (4), melancholy (3), reflective (3), gothic (3), retro (3), romantic (2), grunge (2)
-- **Folklore** (2020): heartbreak (6), dark (5), sadness (5), folklore (4), melancholy (2), glamorous (2), gothic (2), nature (2)
-- **Midnights** (2022): dark (5), sadness (5), heartbreak (4), melancholy (4), soulful (3), dreamy (2), romantic (2), surreal (2)
-- **TTPD** (2024): dark (9), heartbreak (7), pop (6), sadness (5), gothic (5), contemporary pop (3), urban (3), romantic (3)
-- **Life of a Showgirl** (2025): retro (3), heartbreak (3), fantasy (2), melancholy (2), melancholic (2), dark (2), soul (2), r&b (2)
-- **Other** (): gritty (1), melancholy (1), coastal (1), patriotic (1), rage (1), youthful (1)
+- **Taylor Swift** (2006): heartfelt (6), heartbreak (5), romantic (4), pop (3), sadness (3), melancholic (2), romance (2), vulnerable (2)
+- **Fearless** (2008): heartbreak (11), sadness (8), romantic (7), heartfelt (6), pop (5), soulful (4), melancholy (3), love (3)
+- **Speak Now** (2010): heartbreak (7), romantic (6), pop (6), soulful (5), sadness (5), heartfelt (4), nostalgia (3), reflective (3)
+- **Red** (2012): heartbreak (15), romantic (8), sadness (8), pop (7), melancholy (6), soulful (3), heartfelt (3), retro (3)
+- **1989** (2014): heartbreak (6), pop (5), sadness (4), soulful (3), retro (3), romantic (3), r&b (2), soft rock (2)
+- **Reputation** (2017): r&b (7), pop (4), soulful (4), dark (3), heartbreak (3), seduction (2), pop-rock (1), hip-hop (1)
+- **Lover** (2019): romantic (3), soulful (3), soft rock (2), dark (2), love (2), r&b (2), gritty (2), sadness (2)
+- **Evermore** (2020): sadness (6), melancholy (5), heartbreak (4), pop (3), reflection (3), reflective (3), grunge (2), retro (2)
+- **Folklore** (2020): folklore (7), sadness (5), heartbreak (3), dark (3), melancholy (3), glamorous (2), vulnerability (2), vaporwave (1)
+- **Midnights** (2022): dark (5), dreamy (4), sadness (4), gritty (4), melancholy (4), melancholic (3), heartbreak (3), retro (2)
+- **TTPD** (2024): dark (9), heartbreak (7), pop (5), gothic (5), r&b (4), moody (3), soul (3), reflective (3)
+- **Life of a Showgirl** (2025): retro (3), dark (3), punk (3), sophisticated (2), r&b (2), fantasy (1), pop (1), magical (1)
+- **Other** (): gothic (1), melancholy (1), coastal (1), punk (1), rebellion (1), hope (1)
 
 ## Sample summaries (first 10 songs)
 
 | Song | Album | Summary | Vibe |
 |------|-------|---------|------|
-| Tim McGraw | Taylor Swift | A nostalgic love letter reflecting on past happiness and heartbreak. | Country, Heartfelt, Melancholic |
-| Picture To Burn | Taylor Swift | A scorned lover's bitter rant about a pickup truck and lost love. | Rock, Anger, Heartbreak |
-| Teardrops On My Guitar | Taylor Swift | Romantic longing and heartbreak through Taylor Swift's introspective lyrics. | Sadness, Heartbreak, Love |
-| A Place In This World | Taylor Swift | A young woman searching for her place in the world amidst uncertainty and loneliness. | Gritty, Empowering, Heartfelt |
-| Cold As You | Taylor Swift | Cold and broken love story; emotional turmoil. | Sadness, Heartbreak, Melancholy |
-| The Outside | Taylor Swift | Taylor Swift explores feelings of isolation and longing for connection. | Sadness, Reflection, Heartbreak |
-| Tied Together With A Smile | Taylor Swift | A woman struggles with self-doubt and heartbreak, held back by a forced smile. | Sadness, Pop, Heartbreak |
-| Stay Beautiful | Taylor Swift | Taylor Swift's heartbreak through Cory's eyes; a love letter to lost beauty. | Romantic, Heartbreak, Gritty |
-| Should've Said No | Taylor Swift | Taylor Swift reflects on a regretful past relationship, questioning if she made the right choice. | Contemporary Pop, Heartbreak, Reflection |
-| Mary's Song (Oh My My My) | Taylor Swift | Romantic reminiscence of a young couple's first love affair. | Heartfelt, Retro, Love |
+| Tim McGraw | Taylor Swift | A nostalgic love letter set in a small town, reflecting on past happiness and heartbreak. | Country, Heartfelt, Melancholic |
+| Picture To Burn | Taylor Swift | A scorned lover's bitter recollection and revenge plan. | Pop, Anger, Heartbreak |
+| Teardrops On My Guitar | Taylor Swift | A longing for unrequited love and its emotional toll. | Sadness, Heartbreak, Romance |
+| A Place In This World | Taylor Swift | A young woman searching for her place in the world amidst uncertainty and loneliness. | Empowering, Indie-Rock, Vulnerable |
+| Cold As You | Taylor Swift | A heartbroken woman reflects on her failed relationship in a desolate, gloomy setting. | Sadness, Romance, Melancholy |
+| The Outside | Taylor Swift | A longing for connection expressed through introspection and regret. | Sadness, Reflection, Vulnerability |
+| Tied Together With A Smile | Taylor Swift | A woman encourages her friend to embrace their true self amidst heartbreak and doubt. | Pop, Heartfelt, Melancholic |
+| Stay Beautiful | Taylor Swift | Taylor Swift's love letter to Cory, blending longing and hope. | Romantic, Soulful, Heartfelt |
+| Should've Said No | Taylor Swift | Taylor Swift's song about regret over a past indiscretion, focusing on emotional pain and missed opportunities. | Contemporary Pop, Heartbreak, Reflection |
+| Mary's Song (Oh My My My) | Taylor Swift | A nostalgic tale of a teenage romance revisited decades later. | Vocal, Heartfelt, Retro |
+
+## Failed parses
+
+None.
 
 ## Honest caveats
 
-- The model is qwen2.5:3b (3.1B params, q4_K_M), a small general-purpose
+- The model is qwen2.5:3b (q4_K_M), a small general-purpose
   chat model. Outputs are plausible but not authoritative.
-- 1 song (Haunted, Speak Now) returned a fully Japanese summary that
-  may be unusable for English readers. The vibe field was still English
-  ("Sad, Pop, Heartbreak"). Sampling artifact at temperature=0.3.
-- 1 song (Shake It Off, 1989) had non-Latin (Chinese) tokens in the
-  vibe field ("Pop,自信,动感,励志,节奏"). The summary was still English.
+- 2 song(s) had non-Latin tokens in the vibe
+  field (sampling artifact at temperature=0.3): **Shake It Off** (1989), **Me!** (Lover).
 - 'Other' bucket has only 2 songs; the per-album vibe word cloud for
   'Other' is noise and not interpretable.
 
@@ -60,10 +61,6 @@ Most common vibe tags per album (top 8 each).
   table (Fearless 2008, Red 2012, 1989 2014, Speak Now 2010 — but CoTS
   reported the Taylor's Version re-release years 2021, 2021, 2023, 2023).
   build_pipeline.py now prefers album_meta.json's canonical years.
-
-## Failed parses
-
-None.
 
 ## Reproducing
 
