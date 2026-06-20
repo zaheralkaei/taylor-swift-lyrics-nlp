@@ -182,14 +182,14 @@ def main() -> int:
                 opacity=0.85,
             ),
             text=[f"<b>{album}</b>"],
-            textposition="top center",
-            textfont=dict(size=10),
-            hovertemplate=f"<b>{album}</b><br>mean DistilBERT pos: %{{y:.3f}}<br>mean MATTR-500: %{{x:.3f}}<br>n songs: {n[0]}<extra></extra>",
-        ))
+                    textposition="top center",
+                        textfont=dict(size=10),
+                        hovertemplate=f"<b>{album}</b><br>mean DistilBERT pos: %{{y:.3f}}<br>mean MATTR-200: %{{x:.3f}}<br>n songs: {n[0]}<extra></extra>",
+                    ))
 
     fig2.update_layout(
-        title=dict(text="<b>Sentiment vs lexical diversity per album</b><br><sub>Each bubble = one album. y = mean DistilBERT pos. x = mean MATTR-500 (within-song vocab diversity).<br>Bubble size = n songs. TTPD is bottom-right (most lexically diverse AND most negative).</sub>", x=0.02),
-        xaxis_title="Mean MATTR-500 (within-song vocab diversity)",
+        title=dict(text="<b>Sentiment vs lexical diversity per album</b><br><sub>Each bubble = one album. y = mean DistilBERT pos. x = mean MATTR-200 (within-song vocab diversity).<br>Bubble size = n songs. TTPD is bottom-right (most lexically diverse AND most negative).</sub>", x=0.02),
+        xaxis_title="Mean MATTR-200 (within-song vocab diversity)",
         yaxis_title="Mean DistilBERT pos",
         yaxis=dict(range=[-0.05, 1.0]),
         height=620, width=None,
@@ -450,8 +450,8 @@ a { color: #2ca02c; }
     html_parts.append("""
 <div class="section">
   <h2>2. Sentiment vs lexical diversity per album</h2>
-  <p>Album-level mean DistilBERT pos (y) vs album-level mean MATTR-500 (x). MATTR-500 is moving-average type-token ratio — measures within-song vocabulary diversity, stable across song lengths.</p>
-  <p><b>Headline (descriptive, not causal):</b> TTPD sits at the bottom-right (lowest DistilBERT pos + highest MATTR-500). Whether this is 'most linguistically and emotionally complex' is a value judgment, not a measurement — the chart only shows the relative position. Sample sizes per album are 12-31 songs; per-album means have standard errors of ~0.05-0.12 on the bert_pos scale (full table with 95% CIs in <code>reports/sentiment_summary.md</code>).</p>
+  <p>Album-level mean DistilBERT pos (y) vs album-level mean MATTR-200 (x). MATTR-200 is moving-average type-token ratio — measures within-song vocabulary diversity across a 200-token window. MATTR-200 covers ~98% of songs (median song = 366 words); the older MATTR-500 window was effectively TTR for 93% of songs.</p>
+    <p><b>Headline (descriptive, not causal):</b> TTPD sits at the bottom-right (lowest DistilBERT pos + highest MATTR-200). Whether this is 'most linguistically and emotionally complex' is a value judgment, not a measurement — the chart only shows the relative position. Sample sizes per album are 12-31 songs; per-album means have standard errors of ±0.06-±0.12 on the bert_pos scale (full table with 95% CIs in <code>reports/sentiment_summary.md</code>).</p>
 """)
     html_parts.append(fig2.to_html(full_html=False, include_plotlyjs=False, div_id="chart2"))
     html_parts.append("</div>")

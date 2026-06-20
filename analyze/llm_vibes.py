@@ -58,8 +58,13 @@ Lyrics:
 Respond with JSON only."""
 
 
-def call_ollama(model: str, prompt: str, timeout: int = 180) -> tuple[str, float]:
-    """Call ollama /api/generate and return (response_text, latency_seconds)."""
+def call_ollama(model: str, prompt: str, seed: int = 42, timeout: int = 180) -> tuple[str, float]:
+    """Call ollama /api/generate and return (response_text, latency_seconds).
+
+    `seed` is fixed to a constant for reproducibility — without it, ollama's
+    sampler picks a random seed per request and the LLM pass output is
+    non-deterministic. See round 8 audit.
+    """
     payload = json.dumps({
         "model": model,
         "system": SYSTEM_PROMPT,
@@ -69,6 +74,7 @@ def call_ollama(model: str, prompt: str, timeout: int = 180) -> tuple[str, float
             "temperature": 0.3,
             "num_predict": 120,
             "top_p": 0.9,
+            "seed": seed,
         },
     }).encode()
     req = urllib.request.Request(
