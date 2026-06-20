@@ -70,7 +70,8 @@ confessional chorus).
 | Other | 2 | -0.466 |
 
 **Largest mean jump**: 1989 (+0.291).
-**Smallest mean jump**: Other (-0.466).
+**Smallest mean jump**: Taylor Swift (-0.201).
+  (Excluding 'Other' bucket — n=2 non-album songs, -0.466).
 
 ## 3. Top 15 songs by verse->chorus jump (DistilBERT)
 

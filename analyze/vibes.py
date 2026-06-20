@@ -14,6 +14,16 @@ phase 7's visualization can use for coloring. Without an LLM we don't
 get prose summaries, but we do get meaningful clusters that often
 correspond to lyrical themes.
 
+**IMPORTANT (round 4 audit, 2026-06-20)**: silhouette score for K=10
+on this corpus is essentially zero (mean ~0.004). K-means cluster
+assignments are unstable across random seeds (ARI ~0.15 between seeds).
+49.6% of songs have NEGATIVE silhouette — they're closer to a different
+cluster's centroid than to their own. The 'vibe clusters' are real
+assignments but they don't represent any strong underlying structure in
+the embedding space. The top-5 songs and album distribution per cluster
+are seed-dependent: a different seed would tell a different "story" with
+the same data. Treat cluster descriptions as exploratory, not definitive.
+
 Outputs:
   - reports/song_vibes.csv (244 rows × cluster + vibe hint)
   - reports/vibes_summary.md (human-readable)
@@ -207,6 +217,41 @@ def main() -> int:
     for same, n, album in consistency:
         pct = 100 * same / n if n else 0
         L.append(f"| {album} | {n} | {same} | {pct:.0f}% |")
+    L.append("")
+    L.append("**Caveat on consistency**: the variation 67% to 97% mostly tracks")
+    L.append("album size (n=12 to n=31) — a 31-song album is more likely to land")
+    L.append("multiple songs in the same cluster than a 12-song album, by chance.")
+    L.append("This is a real signal (TTPD songs are more similar to each other) but")
+    L.append("it's confounded with sample size.")
+    L.append("")
+
+    # ---- cluster quality (round 4 audit) ----
+    L.append("## Cluster quality (round 4 audit)")
+    L.append("")
+    L.append("K-means on 244 song embeddings was evaluated for cluster quality.")
+    L.append("The findings: **the clusters are weak**.")
+    L.append("")
+    L.append("| Metric | Value |")
+    L.append("|--------|-------|")
+    L.append("| Silhouette score (mean) | ~0.004 (essentially zero) |")
+    L.append("| Silhouette score (median) | ~0.0001 |")
+    L.append("| Fraction of songs with negative silhouette | ~50% (mis-assigned) |")
+    L.append("| Fraction of songs with silhouette > 0.3 | 0% |")
+    L.append("| ARI between K=10 clusterings at different seeds (0,1,7,13,100,999) | 0.13-0.17 (essentially random) |")
+    L.append("| Pairwise cosine similarity mean | 0.44 ± 0.10 (low variance overall) |")
+    L.append("")
+    L.append("**What this means**: the 384-dim sentence embeddings place all 244 songs")
+    L.append("in a relatively tight region of space (all pairwise similarities are")
+    L.append("positive, mean 0.44). K-means splits this region into 10 pieces, but the")
+    L.append("pieces don't correspond to meaningful 'vibe' categories — the cluster")
+    L.append("labels are arbitrary. A different random seed would give a different set")
+    L.append("of 10 clusters with the same ARI of ~0.15 against the current ones, telling")
+    L.append("a different 'story' about the same data.")
+    L.append("")
+    L.append("The cluster compositions (top 5 songs, dominant album) shown above are")
+    L.append("real for seed=42 but seed-dependent. The summary's within-album")
+    L.append("consistency % is also affected — different seeds give different ranks.")
+    L.append("Treat the cluster descriptions as exploratory, not definitive.")
     L.append("")
 
     L.append("## Reproducing")

@@ -250,7 +250,7 @@ def main() -> int:
             fig4.update_yaxes(tickfont=dict(size=8), row=row, col=col)
 
         fig4.update_layout(
-            title=dict(text="<b>Vibe clusters: album composition (phase 6)</b><br><sub>10 K-means clusters on the sentence embeddings. Each cluster shows which albums its songs come from.<br>Cross-album clusters (c1, c3, c5) = shared themes; single-album clusters = distinctive.</sub>",
+            title=dict(text="<b>Vibe clusters: album composition (phase 6)</b><br><sub>10 K-means clusters on the sentence embeddings. Each cluster shows which albums its songs come from. Round 4 audit: silhouette ~0, ARI across seeds ~0.15 — clusters are weak, see the caveat below the chart.</sub>",
                        x=0.02, y=0.98, yanchor="top"),
             height=720, width=None,
             template="plotly_white",
@@ -381,7 +381,7 @@ a { color: #2ca02c; }
 <div class="section">
   <h2>5. Vibe clusters (phase 6a — K-means)</h2>
   <p>K-means (K=10) on the 384-dim sentence embeddings. Each cluster shows which albums its songs come from.</p>
-  <p><b>Headline:</b> 86% of songs have a nearest neighbor from a different album. Multiple explanations are possible (genuine theme sharing, common-English function words dominating the embedding, model limitations) — see the cross-album caveat in <code>reports/similarity_summary.md</code>. Within-album cluster consistency (how often a song's cluster-mates are from the same album) is highest for TTPD (97%), lowest for Life of a Showgirl (67%).</p>
+  <p><b>Round 4 audit caveat:</b> silhouette score for K=10 is essentially zero (~0.004). Cluster assignments are unstable across random seeds (ARI ~0.15). About 50% of songs are on average closer to a different cluster's centroid than their own. The 'clusters' are real for seed=42 but a different seed would give a different 'story' with the same data — see <code>reports/vibes_summary.md</code> for the cluster quality numbers.</p>
 """)
         html_parts.append(fig4.to_html(full_html=False, include_plotlyjs=False, div_id="chart4"))
         html_parts.append("</div>")

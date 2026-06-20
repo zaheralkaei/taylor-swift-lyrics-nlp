@@ -173,6 +173,39 @@ song from the SAME album? Higher = album is internally coherent.
 | Life of a Showgirl | 12 | 8 | 67% |
 | Other | 2 | 0 | 0% |
 
+**Caveat on consistency**: the variation 67% to 97% mostly tracks
+album size (n=12 to n=31) — a 31-song album is more likely to land
+multiple songs in the same cluster than a 12-song album, by chance.
+This is a real signal (TTPD songs are more similar to each other) but
+it's confounded with sample size.
+
+## Cluster quality (round 4 audit)
+
+K-means on 244 song embeddings was evaluated for cluster quality.
+The findings: **the clusters are weak**.
+
+| Metric | Value |
+|--------|-------|
+| Silhouette score (mean) | ~0.004 (essentially zero) |
+| Silhouette score (median) | ~0.0001 |
+| Fraction of songs with negative silhouette | ~50% (mis-assigned) |
+| Fraction of songs with silhouette > 0.3 | 0% |
+| ARI between K=10 clusterings at different seeds (0,1,7,13,100,999) | 0.13-0.17 (essentially random) |
+| Pairwise cosine similarity mean | 0.44 ± 0.10 (low variance overall) |
+
+**What this means**: the 384-dim sentence embeddings place all 244 songs
+in a relatively tight region of space (all pairwise similarities are
+positive, mean 0.44). K-means splits this region into 10 pieces, but the
+pieces don't correspond to meaningful 'vibe' categories — the cluster
+labels are arbitrary. A different random seed would give a different set
+of 10 clusters with the same ARI of ~0.15 against the current ones, telling
+a different 'story' about the same data.
+
+The cluster compositions (top 5 songs, dominant album) shown above are
+real for seed=42 but seed-dependent. The summary's within-album
+consistency % is also affected — different seeds give different ranks.
+Treat the cluster descriptions as exploratory, not definitive.
+
 ## Reproducing
 
 ```bash
