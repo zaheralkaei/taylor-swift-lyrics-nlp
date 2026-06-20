@@ -152,6 +152,14 @@ the two peaks: a mean of 0.50 could mean 50% confident-positive songs
 and 50% confident-negative songs, or it could mean all songs in the
 uncertain middle at exactly 0.5. The album mean can't tell us which.
 
+**Round 5 audit**: per-album distribution breakdown shows the per-album
+mean is essentially determined by the share of confident-negative songs.
+TTPD: 84% low (<0.05), 10% high (>0.95), 6% middle. The 'lowest mean'
+is really 'highest share of confident-negative songs'.
+Speak Now: 41% low, 45% high, 14% middle — the only album where high > low.
+Even the 'highest' Speak Now has 41% of its songs confidently negative
+on this model.
+
 The 'top 5' and 'bottom 5' songs are songs the model is most confident
 about — not 'the most negative' or 'the most positive'. A song with
 bert_pos=0.000 isn't more negative than a song with bert_pos=0.001;

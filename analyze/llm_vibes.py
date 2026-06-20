@@ -158,6 +158,11 @@ def main() -> int:
             summary, vibe = parse_response(raw)
             total_latency += lat
             ok = bool(summary)
+            # additional warning: non-Latin content
+            non_latin_chars = sum(1 for c in (summary + vibe)
+                                  if 0x3000 <= ord(c) <= 0x9FFF or 0x0400 <= ord(c) <= 0x04FF)
+            if non_latin_chars > 0:
+                print(f"  [warn] {s['Title']:<30} ({s['Album']}): {non_latin_chars} non-Latin chars in output")
         except Exception as e:
             raw, lat, summary, vibe = str(e), 0.0, "", ""
             ok = False
