@@ -1,0 +1,29 @@
+# Pinned versions for reproducibility. Verified to work together on:
+#   - Windows Python 3.11.15 (used for similarity, vibes, dashboard)
+#   - Linux Python 3.13 (used for sentiment.py on ai-laptop)
+# Last verified: 2026-06-20.
+#
+# Install:
+#   python -m pip install -r requirements.txt
+#
+# Optional, NOT pip-installable:
+#   - ollama (https://ollama.com) + `ollama pull qwen2.5:3b` for analyze/llm_vibes.py
+
+# Core ML / NLP
+numpy>=1.26,<3.0
+torch>=2.0,<3.0
+transformers>=4.40,<5.0
+sentence-transformers>=2.6,<3.0
+
+# Sentiment lexicons (used by analyze/sentiment.py)
+vaderSentiment>=3.3.2
+textblob>=0.18.0
+
+# Clustering (used by analyze/vibes.py for silhouette, ARI)
+scikit-learn>=1.4,<2.0
+
+# Dashboard (used by analyze/dashboard.py)
+plotly>=5.18,<7.0
+
+# Note: textblob requires NLTK corpora on first run:
+#   python -m textblob.download_corpora

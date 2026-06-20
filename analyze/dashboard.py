@@ -23,6 +23,7 @@ Usage:
 from __future__ import annotations
 import argparse
 import csv
+import html as html_lib  # round 10 audit: HTML-escape song titles in plotly hovertext
 import json
 import statistics
 from collections import Counter, defaultdict
@@ -128,7 +129,7 @@ def main() -> int:
             if y is None: continue
             xs.append(yr)
             ys.append(y)
-            texts.append(f"{r['Title']} ({album}, {yr})<br>DistilBERT pos: {y:.2f}<br>VADER: {fnum(r.get('vader_compound')) or 0:+.2f}")
+            texts.append(f"{html_lib.escape(r['Title'])} ({html_lib.escape(album)}, {yr})<br>DistilBERT pos: {y:.2f}<br>VADER: {fnum(r.get('vader_compound')) or 0:+.2f}")
         fig1.add_trace(go.Scatter(
             x=xs, y=ys, mode="markers",
             name=album,
@@ -400,13 +401,15 @@ def main() -> int:
             chart6_subtitle = f"Both A's top-{n_k} and B's top-{n_k} lists include each other."
 
         # build table rows: top 15 by n1_score, mark which are mutual
+        # round 10 audit: HTML-escape song titles + album names for plotly Table cells
         rows_for_table = []
         for r in sim_rows:
             score = float(r["n1_score"])
             j_row = sim_by_src.get((r["n1_album"], r["n1_title"]))
             mutual = bool(j_row and r["src_title"] in [j_row[f"n{k}_title"] for k in range(1, n_k+1)])
-            rows_for_table.append((score, mutual, r["src_title"], r["src_album"], r["src_year"],
-                                   r["n1_title"], r["n1_album"], r["n1_year"]))
+            rows_for_table.append((score, mutual, html_lib.escape(r["src_title"]),
+                                   html_lib.escape(r["src_album"]), r["src_year"],
+                                   html_lib.escape(r["n1_title"]), html_lib.escape(r["n1_album"]), r["n1_year"]))
         rows_for_table.sort(reverse=True, key=lambda p: p[0])
 
         fig6 = go.Figure(data=[go.Table(
@@ -438,6 +441,7 @@ def main() -> int:
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Taylor Swift's Songs — NLP Analysis Dashboard</title>
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #fafafa; color: #222; }

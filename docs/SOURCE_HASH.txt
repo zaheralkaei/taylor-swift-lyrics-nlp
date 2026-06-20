@@ -1,6 +1,6 @@
 # Source file hashes for the committed state
 
-Combined SHA256: 8bc2b62408055cf0
+Combined SHA256: a87df6ab847841b9
 Generated: 2026-06-20 (commit b7323b0)
 
 Run `python scripts/hash_sources.py` to regenerate.
