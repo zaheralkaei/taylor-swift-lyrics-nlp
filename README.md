@@ -103,10 +103,12 @@ which is **GPL-3.0**. CoTS files are downloaded at runtime and not
 committed to this repo, so this project's MIT license is preserved.
 See `THIRD_PARTY_LICENSES.md` for the full explanation.
 
-## What's coming
+## Status
 
-All seven phases are in place. The combined interactive dashboard is at
-[`reports/dashboard.html`](reports/dashboard.html) — open in any browser.
+All seven phases are complete and the project has been audited 11 times for
+data correctness, methodology rigor, and engineering hygiene. The combined
+interactive dashboard is at [`reports/dashboard.html`](reports/dashboard.html)
+— open in any browser.
 
 Per-phase summaries (committed):
 - [`reports/sentiment_summary.md`](reports/sentiment_summary.md) — phase 2
@@ -115,9 +117,29 @@ Per-phase summaries (committed):
 - [`reports/similarity_summary.md`](reports/similarity_summary.md) — phase 5
 - [`reports/vibes_summary.md`](reports/vibes_summary.md) — phase 6
 
+### Audit summary
+
+11 audit rounds on 2026-06-20 caught and fixed:
+- Year misattribution (CoTS uses Taylor's Version re-release years)
+- 2 silent data drops (IntroOutro key, paren-strip on vocalisations)
+- 12 songs silently BERT-truncated at 512 tokens (now mean-pooled)
+- K-means cluster quality: silhouette ≈ 0, ARI ≈ 0.15 (now documented)
+- Hardcoded prose drifting from data (now all dynamic)
+- LLM pass non-reproducible (now ollama seed=42)
+- CoTS upstream not SHA-pinned (now pinned + verified)
+- requirements.txt missing (now documented)
+- HTML escaping for song titles with `&`
+
+See [docs/SOURCE_HASH.txt](docs/SOURCE_HASH.txt) for the combined
+source hash (a87df6ab847841b9 — identifies this exact committed state).
+
 Reproducing everything from scratch (assumes data/raw/cots/ is empty):
 
 ```bash
+# Step 0: install deps (round 10 audit — requirements.txt)
+python -m pip install -r requirements.txt
+python -m textblob.download_corpora
+
 # Step 1: fetch + verify CoTS (round 9 audit — SHA256 pinned)
 python data/fetch_cots.py --verify-sha256   # verify cached files
 python data/fetch_cots.py --print-sha256     # print upstream SHAs after a deliberate update
