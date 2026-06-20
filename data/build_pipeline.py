@@ -66,10 +66,23 @@ def main() -> int:
     for row in raw_albums:
         code = row["Code"]
         meta = album_to_meta.get(code, {"album": code, "year": None})
+        # Prefer album_meta.json year (canonical original release). CoTS uses
+        # Taylor's Version re-release years for 4 albums (Fearless/1989/Red/
+        # Speak Now) which would mislead time-series visualizations.
+        meta_year = coerce_int(meta.get("year"))
+        cots_year = coerce_int(row.get("Year"))
+        # Use meta year if present; fall back to CoTS only if meta lacks one.
+        if meta_year is not None:
+            year = meta_year
+        elif cots_year is not None:
+            year = cots_year
+            print(f"[warn] {code}: using CoTS year {year} (not in album_meta.json)")
+        else:
+            year = None
         albums_out.append({
             "AlbumCode": code,
             "Album":     meta["album"],
-            "Year":      coerce_int(row.get("Year")) or meta.get("year"),
+            "Year":      year,
             "Songs":     coerce_int(row.get("Songs")),
             "Lines":     coerce_int(row.get("Lines")),
             "Words":     coerce_int(row.get("Words")),
@@ -89,7 +102,7 @@ def main() -> int:
         songs_out.append({
             "AlbumCode":    code,
             "Album":        meta["album"],
-            "Year":         meta.get("year"),
+            "Year":         coerce_int(meta.get("year")),
             "TrackNumber":  coerce_int(row.get("Track")),
             "Title":        row.get("Title", ""),
             "FeaturedArtists": row.get("FeaturedArtists", ""),
