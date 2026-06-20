@@ -355,11 +355,11 @@ def main() -> int:
         n_k = 5
         sim_by_src = {}
         for r in sim_rows:
-            sim_by_src[(r["src_album"], r["src_track"], r["src_title"])] = r
+            sim_by_src[(r["src_album"], r["src_title"])] = r
         mutual_top_score = 0.0
         top_mutual = None
         for r in sim_rows:
-            j_row = sim_by_src.get((r["n1_album"], r["n1_track"], r["n1_title"]))
+            j_row = sim_by_src.get((r["n1_album"], r["n1_title"]))
             if not j_row: continue
             # check if r["src_title"] is in j_row's top-K
             top5_b = [j_row[f"n{k}_title"] for k in range(1, n_k+1)]
@@ -384,7 +384,7 @@ def main() -> int:
         rows_for_table = []
         for r in sim_rows:
             score = float(r["n1_score"])
-            j_row = sim_by_src.get((r["n1_album"], r["n1_track"], r["n1_title"]))
+            j_row = sim_by_src.get((r["n1_album"], r["n1_title"]))
             mutual = bool(j_row and r["src_title"] in [j_row[f"n{k}_title"] for k in range(1, n_k+1)])
             rows_for_table.append((score, mutual, r["src_title"], r["src_album"], r["src_year"],
                                    r["n1_title"], r["n1_album"], r["n1_year"]))
@@ -502,7 +502,11 @@ a { color: #2ca02c; }
 </html>""")
 
     out_path = Path(args.out)
-    out_path.write_text("\n".join(html_parts), encoding="utf-8")
+    # substitute dynamic headlines into the static skeleton before writing
+    full_html = "\n".join(html_parts)
+    full_html = full_html.replace("{headline}", headline)
+    full_html = full_html.replace("{chart6_subtitle}", chart6_subtitle)
+    out_path.write_text(full_html, encoding="utf-8")
     print(f"[ok] wrote {out_path.relative_to(REPO_ROOT)} ({out_path.stat().st_size:,} bytes)")
 
     return 0
