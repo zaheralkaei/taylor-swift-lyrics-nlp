@@ -296,17 +296,20 @@ def main() -> int:
         L.append(f"| {a} | " + " | ".join(cells) + " |")
     L.append("")
 
-    # ---- top jaccard pairs ----
+    # ---- top jaccard pairs (excluding 'Other' bucket) ----
     pairs = []
-    for i, a in enumerate(albums_sorted):
-        for b in albums_sorted[i+1:]:
+    real = [a for a in albums_sorted if a != "Other"]
+    for i, a in enumerate(real):
+        for b in real[i+1:]:
             pairs.append((jaccard(a,b), a, b))
     pairs.sort(reverse=True)
     L.append("## Most vocabulary-similar album pairs (Jaccard over unique tokens)")
     L.append("")
-    L.append("Higher = more vocabulary overlap. Self-titled and reputation-era")
-    L.append("albums often share large vocab pools because they all draw on")
-    L.append("common English.")
+    L.append("Higher = more vocabulary overlap. Note: even the highest")
+    L.append("Jaccard is only ~0.36 — meaning Swift's most-similar albums")
+    L.append("still share only about 1/3 of their unique vocabulary. The")
+    L.append("non-overlapping 2/3 reflects within-album imagery plus words")
+    L.append("rare enough to appear in only one album.")
     L.append("")
     L.append("| Album A | Album B | Jaccard |")
     L.append("|---------|---------|---------|")
@@ -317,6 +320,8 @@ def main() -> int:
     # ---- least similar ----
     L.append("## Least vocabulary-similar album pairs")
     L.append("")
+    L.append("Excludes the 'Other' bucket (n=2 — too small to compare).")
+    L.append("")
     L.append("| Album A | Album B | Jaccard |")
     L.append("|---------|---------|---------|")
     for j, a, b in pairs[-10:][::-1]:
@@ -324,21 +329,16 @@ def main() -> int:
     L.append("")
 
     # ---- headlines ----
-    if albums_sorted:
+    # exclude 'Other' (n=2 non-album songs — too small for stat inference)
+    real_albums = [a for a in albums_sorted if a != "Other"]
+    if real_albums:
         ranked_by_complexity = sorted(
-            ((album_stats_dict[a]["mean_oec"] or 0, a) for a in albums_sorted),
+            ((album_stats_dict[a]["mean_oec"] or 0, a) for a in real_albums),
             key=lambda x: x[0], reverse=True
         )
-        ranked_by_mattr = sorted(
-            (album_stats_dict[a].get("mean_oec", 0) and
-             (len(set(album_tokens[a])) / len(album_tokens[a]) if album_tokens[a] else 0,
-              a)
-             for a in albums_sorted),
-            key=lambda x: x[0], reverse=True
-        )
-        # use MATTR computed properly
+        # MATTR computed properly per album
         mattr_rank = []
-        for a in albums_sorted:
+        for a in real_albums:
             m = mattr(album_tokens[a], args.mattr_window)
             if m is not None:
                 mattr_rank.append((m, a))
@@ -346,11 +346,11 @@ def main() -> int:
         L.append("## Headlines")
         L.append("")
         L.append("**Vocabulary is remarkably flat across the discography**.")
-        L.append("Mean OEC rank spans only 25-29 across all 13 albums — that's a")
-        L.append("4-point spread on a scale where rank-1 is the most common English")
-        L.append("word and rank-10000 is the median. Swift doesn't dramatically shift")
-        L.append("vocabulary register across her career; her lyric style is")
-        L.append("consistently everyday-English.")
+        L.append("Mean OEC rank spans only 25-29 across all studio albums — a")
+        L.append("4-point spread on a scale where rank-1 is the most common")
+        L.append("English word and rank-10000 is the median. Swift doesn't")
+        L.append("dramatically shift vocabulary register across her career; her")
+        L.append("lyric style is consistently everyday-English.")
         L.append("")
         L.append(f"**Highest mean OEC rank (rarest vocabulary)**: {ranked_by_complexity[0][1]} (mean rank {ranked_by_complexity[0][0]:.0f}).")
         L.append(f"**Lowest mean OEC rank (most common vocabulary)**: {ranked_by_complexity[-1][1]} (mean rank {ranked_by_complexity[-1][0]:.0f}).")
@@ -363,14 +363,31 @@ def main() -> int:
             L.append("Folklore, Evermore, TTPD, and Life of a Showgirl cluster at")
             L.append("the high-MATTR end — the post-2020 albums use more varied words")
             L.append("within each song. 1989 and Reputation are at the low-MATTR end —")
-            L.append("more repetitive vocabulary within songs (the pop-hook pattern).")
+            L.append("more repetitive vocabulary within songs (consistent with pop-hook")
+            L.append("form, where repeated phrases are a feature).")
         L.append("")
-        # combine with phase 2
-        L.append("**Combined with phase 2**: TTPD has the lowest DistilBERT pos")
-        L.append("(0.115 — most negative) AND the highest MATTR (0.346 — most")
-        L.append("lexically diverse). The Tortured Poets Department is the most")
-        L.append("linguistically *and* emotionally complex album in the corpus.")
-        L.append("")
+        # combined with phase 2 — use the actual current ranking, not hardcoded.
+        # Read sentiment_per_song.csv if available.
+        sent_csv = REPO_ROOT / "reports" / "sentiment_per_song.csv"
+        if sent_csv.exists():
+            import csv as _csv
+            by_a = {}
+            for r in _csv.DictReader(sent_csv.open(encoding="utf-8")):
+                if r["Album"] == "Other": continue
+                b = r.get("bert_pos")
+                if not b: continue
+                by_a.setdefault(r["Album"], []).append(float(b))
+            if by_a:
+                avg = {a: sum(v)/len(v) for a, v in by_a.items()}
+                lowest_album = min(avg, key=avg.get)
+                highest_mattr_album = mattr_rank[0][1] if mattr_rank else None
+                L.append(f"**Combined with phase 2**: {highest_mattr_album} has the")
+                L.append(f"highest MATTR ({mattr_rank[0][0]:.3f}) AND {lowest_album} has the")
+                L.append(f"lowest mean DistilBERT pos ({avg[lowest_album]:.3f}). These")
+                L.append("are not necessarily the same album — the join here is")
+                L.append("illustrative, not a strong claim about a single 'most complex'")
+                L.append("album.")
+                L.append("")
 
     L.append("## Reproducing")
     L.append("")
@@ -387,11 +404,11 @@ def main() -> int:
     OUT_MD.write_text("\n".join(L) + "\n", encoding="utf-8")
     print(f"[ok] wrote {OUT_MD.relative_to(REPO_ROOT)} ({len(L)} lines)")
 
-    # console headline
+    # console headline (exclude 'Other' bucket — too small for inference)
     print(f"\n=== headline ===")
-    if albums_sorted:
+    if real_albums:
         ranked = sorted(
-            ((album_stats_dict[a]["mean_oec"] or 0, a) for a in albums_sorted),
+            ((album_stats_dict[a]["mean_oec"] or 0, a) for a in real_albums),
             key=lambda x: x[0], reverse=True
         )
         print(f"highest mean OEC rank (rarest vocab): {ranked[0][1]} (rank {ranked[0][0]:.0f})")
