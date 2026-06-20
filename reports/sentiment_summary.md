@@ -67,10 +67,29 @@ lowest (0.115), with Midnights (2022) second-lowest (0.177).
 
 **Caveat**: this ranking comes from album means of 12-31 song-level
 predictions each. With these sample sizes, the standard error of the
-mean is roughly ±0.05-0.08 on the bert_pos scale. Differences of less than
-~0.1 between adjacent albums are not statistically meaningful from this
-sample. The big gap between the top (Speak Now 0.50) and bottom (TTPD 0.12)
-is real; smaller re-orderings within the middle of the ranking are not.
+mean is roughly ±0.05-0.12 on the bert_pos scale (larger for albums
+with more variance, smaller for ones with more consistent songs).
+Differences of less than ~0.15-0.20 between adjacent albums are not
+statistically meaningful from this sample. The big gap between the
+top (Speak Now 0.50) and bottom (TTPD 0.12) is real; smaller
+re-orderings within the middle of the ranking are not.
+
+Per-album bert_pos with standard error of the mean:
+
+| Album | n | mean | SEM | 95% CI |
+|-------|---|------|-----|--------|
+| Taylor Swift | 14 | 0.351 | ±0.124 | [0.107, 0.594] |
+| Fearless | 25 | 0.437 | ±0.098 | [0.244, 0.629] |
+| Speak Now | 22 | 0.497 | ±0.105 | [0.290, 0.703] |
+| Red | 28 | 0.309 | ±0.079 | [0.153, 0.465] |
+| 1989 | 22 | 0.443 | ±0.105 | [0.238, 0.648] |
+| Reputation | 15 | 0.364 | ±0.108 | [0.152, 0.576] |
+| Lover | 18 | 0.441 | ±0.105 | [0.235, 0.647] |
+| Evermore | 17 | 0.257 | ±0.103 | [0.055, 0.458] |
+| Folklore | 17 | 0.311 | ±0.108 | [0.100, 0.522] |
+| Midnights | 21 | 0.177 | ±0.075 | [0.030, 0.324] |
+| TTPD | 31 | 0.115 | ±0.050 | [0.016, 0.213] |
+| Life of a Showgirl | 12 | 0.289 | ±0.119 | [0.056, 0.522] |
 
 **Time trend**: album means do NOT form a clean monotonic career arc.
 The early career (TSW-Fearless-Speak Now) sits at the top, then a dip
@@ -136,7 +155,7 @@ python analyze/sentiment.py
 
 Output files (gitignored, regenerable):
 - `reports/sentiment_per_song.csv` — 244 rows × 14 sentiment columns
-- `reports/sentiment_per_section.csv` — 717 rows (one per song × section)
+- `reports/sentiment_per_section.csv` — ~888 rows (one per song × tagged section)
 
 **Reproducibility note**: `data/fetch_cots.py` downloads CoTS from
 upstream's `main` branch HEAD. The CoTS Year column reports

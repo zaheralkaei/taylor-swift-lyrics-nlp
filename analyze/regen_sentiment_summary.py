@@ -112,10 +112,31 @@ def main() -> int:
     L.append("")
     L.append("**Caveat**: this ranking comes from album means of 12-31 song-level")
     L.append("predictions each. With these sample sizes, the standard error of the")
-    L.append("mean is roughly ±0.05-0.08 on the bert_pos scale. Differences of less than")
-    L.append("~0.1 between adjacent albums are not statistically meaningful from this")
-    L.append("sample. The big gap between the top (Speak Now 0.50) and bottom (TTPD 0.12)")
-    L.append("is real; smaller re-orderings within the middle of the ranking are not.")
+    L.append("mean is roughly ±0.05-0.12 on the bert_pos scale (larger for albums")
+    L.append("with more variance, smaller for ones with more consistent songs).")
+    L.append("Differences of less than ~0.15-0.20 between adjacent albums are not")
+    L.append("statistically meaningful from this sample. The big gap between the")
+    L.append("top (Speak Now 0.50) and bottom (TTPD 0.12) is real; smaller")
+    L.append("re-orderings within the middle of the ranking are not.")
+    L.append("")
+    # add a row with std error per album so the caveat is grounded in numbers
+    L.append("Per-album bert_pos with standard error of the mean:")
+    L.append("")
+    L.append("| Album | n | mean | SEM | 95% CI |")
+    L.append("|-------|---|------|-----|--------|")
+    by_album_for_ci = defaultdict(list)
+    for r in songs:
+        try: by_album_for_ci[r["Album"]].append(float(r["bert_pos"]))
+        except: pass
+    for album in albums_sorted:
+        if album == "Other": continue
+        vs = by_album_for_ci.get(album, [])
+        if not vs: continue
+        m = statistics.mean(vs)
+        sem = statistics.stdev(vs) / (len(vs)**0.5) if len(vs) > 1 else 0
+        ci_lo = m - 1.96*sem
+        ci_hi = m + 1.96*sem
+        L.append(f"| {album} | {len(vs)} | {m:.3f} | ±{sem:.3f} | [{ci_lo:.3f}, {ci_hi:.3f}] |")
     L.append("")
     L.append("**Time trend**: album means do NOT form a clean monotonic career arc.")
     L.append("The early career (TSW-Fearless-Speak Now) sits at the top, then a dip")
@@ -180,7 +201,7 @@ def main() -> int:
     L.append("")
     L.append("Output files (gitignored, regenerable):")
     L.append("- `reports/sentiment_per_song.csv` — 244 rows × 14 sentiment columns")
-    L.append("- `reports/sentiment_per_section.csv` — 717 rows (one per song × section)")
+    L.append("- `reports/sentiment_per_section.csv` — ~888 rows (one per song × tagged section)")
     L.append("")
     L.append("**Reproducibility note**: `data/fetch_cots.py` downloads CoTS from")
     L.append("upstream's `main` branch HEAD. The CoTS Year column reports")

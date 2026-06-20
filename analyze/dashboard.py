@@ -213,7 +213,7 @@ def main() -> int:
 
     fig3.update_layout(
         barmode="stack",
-        title=dict(text="<b>Per-album section composition</b><br><sub>% of total lyric characters per section, by album. Verses typically dominate; choruses ~15-20%.</sub>", x=0.02),
+        title=dict(text="<b>Per-album section composition</b><br><sub>% of total lyric characters per section, by album. Verses + choruses dominate (~75%); bridges 10-18%; in_out 4-10%; refrains rare.</sub>", x=0.02),
         xaxis_title="Album (release year order)",
         yaxis_title="% of characters",
         yaxis=dict(range=[0, 100]),
@@ -262,7 +262,7 @@ def main() -> int:
         b = fnum(r.get("bert_pos"))
         if b is not None: section_avg[r["Section"]].append(b)
 
-    sec_x = ["verse", "chorus", "bridge", "refrain"]
+    sec_x = ["verse", "chorus", "bridge", "refrain", "in_out"]
     sec_y = [statistics.mean(section_avg[s]) if section_avg[s] else 0 for s in sec_x]
     sec_n = [len(section_avg[s]) for s in sec_x]
 
@@ -275,7 +275,7 @@ def main() -> int:
         hovertemplate="%{x}<br>mean DistilBERT pos: %{y:.3f}<br>n: %{text}<extra></extra>",
     ))
     fig5.update_layout(
-        title=dict(text="<b>Per-section sentiment (DistilBERT pos)</b><br><sub>Mean across all 244 songs. Bridges are the MOST positive section — not the darkest as pop-theory would predict.</sub>", x=0.02),
+        title=dict(text="<b>Per-section sentiment (DistilBERT pos)</b><br><sub>Mean across all 244 songs. in_out scores highest on DistilBERT pos, but that's partly an artifact — intros/outros are short and simpler than the song's emotional core.</sub>", x=0.02),
         xaxis_title="Section",
         yaxis_title="Mean DistilBERT pos",
         yaxis=dict(range=[0, 0.7]),
@@ -352,7 +352,7 @@ a { color: #2ca02c; }
 <div class="section">
   <h2>2. Sentiment vs lexical diversity per album</h2>
   <p>Album-level mean DistilBERT pos (y) vs album-level mean MATTR-500 (x). MATTR-500 is moving-average type-token ratio — measures within-song vocabulary diversity, stable across song lengths.</p>
-  <p><b>Headline (descriptive, not causal):</b> TTPD sits at the bottom-right (lowest DistilBERT pos + highest MATTR-500). Whether this is 'most linguistically and emotionally complex' is a value judgment, not a measurement — the chart only shows the relative position. Sample sizes per album are 12-31 songs; per-album means have standard errors of ~0.05-0.08 on the bert_pos scale.</p>
+  <p><b>Headline (descriptive, not causal):</b> TTPD sits at the bottom-right (lowest DistilBERT pos + highest MATTR-500). Whether this is 'most linguistically and emotionally complex' is a value judgment, not a measurement — the chart only shows the relative position. Sample sizes per album are 12-31 songs; per-album means have standard errors of ~0.05-0.12 on the bert_pos scale (full table with 95% CIs in <code>reports/sentiment_summary.md</code>).</p>
 """)
     html_parts.append(fig2.to_html(full_html=False, include_plotlyjs=False, div_id="chart2"))
     html_parts.append("</div>")
