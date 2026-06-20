@@ -125,20 +125,36 @@ lyric style is consistently everyday-English.
 **Highest mean OEC rank (rarest vocabulary)**: Reputation (mean rank 29).
 **Lowest mean OEC rank (most common vocabulary)**: Midnights (mean rank 25).
 
-**Highest MATTR-500 (most within-song vocabulary diversity)**:
+**Highest MATTR-500 (most within-song vocabulary diversity) — album-concat measure** (concatenate each album's lyrics, then compute MATTR):
   TTPD (MATTR=0.346)
   Folklore (MATTR=0.318)
   Evermore (MATTR=0.310)
 
-Folklore, Evermore, TTPD, and Life of a Showgirl cluster at
-the high-MATTR end — the post-2020 albums use more varied words
-within each song. 1989 and Reputation are at the low-MATTR end —
-more repetitive vocabulary within songs (consistent with pop-hook
-form, where repeated phrases are a feature).
+**Same ranking by per-song mean MATTR (used in the dashboard chart 2)**:
+(compute MATTR for each song, then average per album)
+
+  TTPD (mean MATTR=0.446, n=31)
+  Folklore (mean MATTR=0.418, n=17)
+  Evermore (mean MATTR=0.385, n=17)
+  Midnights (mean MATTR=0.382, n=21)
+  Life of a Showgirl (mean MATTR=0.376, n=12)
+
+**Important caveat**: the two measures tell slightly different stories.
+Album-concat MATTR weights long songs more (concatenation gives them more
+tokens to look at). Per-song-mean MATTR weights songs equally regardless
+of length. Both agree on the top album (TTPD) and the bottom (1989 /
+Reputation), but the mid-rankings differ.
+
+**Note on MATTR-500 and this corpus**: 93% of songs have
+fewer than 500 words. For these short songs the function
+falls back to plain TTR (type-token ratio = unique words / total words).
+So 'MATTR-500' on this corpus is mostly measuring whole-song TTR, not the
+moving-average behaviour the name suggests. A smaller window (e.g. 100)
+would give a more meaningful MATTR signal but loses length normalisation.
 
 **Combined with phase 2**: TTPD has the
 highest MATTR (0.346) AND TTPD has the
-lowest mean DistilBERT pos (0.115). These
+lowest mean DistilBERT pos (0.133). These
 are not necessarily the same album — the join here is
 illustrative, not a strong claim about a single 'most complex'
 album.

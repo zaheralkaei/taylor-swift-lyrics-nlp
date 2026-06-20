@@ -30,9 +30,9 @@ not a ground-truth emotional reading.
 
 | Model | Mean | Median | Min | Max |
 |-------|------|--------|-----|-----|
-| VADER compound | +0.450 | +0.970 | -1.000 | +1.000 |
-| TextBlob polarity | +0.097 | +0.102 | -0.625 | +0.575 |
-| DistilBERT pos prob | +0.327 | +0.017 | +0.000 | +0.999 |
+| VADER compound | +0.464 | +0.970 | -1.000 | +1.000 |
+| TextBlob polarity | +0.099 | +0.102 | -0.625 | +0.575 |
+| DistilBERT pos prob | +0.335 | +0.016 | +0.000 | +0.999 |
 
 **Reading**: VADER is systematically optimistic (median +0.97 — it catches
 words like "love", "beautiful", "kiss" but ignores surrounding context).
@@ -49,17 +49,17 @@ trend interpretation; statistical power is too low.
 | Album | Year | n | VADER | TextBlob | DistilBERT pos |
 |-------|------|---|-------|----------|---------------|
 | Taylor Swift | 2006 | 14 | +0.486 | +0.165 | 0.351 |
-| Fearless | 2008 | 25 | +0.635 | +0.111 | 0.437 |
-| Speak Now | 2010 | 22 | +0.526 | +0.100 | 0.497 |
-| Red | 2012 | 28 | +0.727 | +0.125 | 0.309 |
-| 1989 | 2014 | 22 | +0.558 | +0.083 | 0.443 |
-| Reputation | 2017 | 15 | +0.535 | +0.075 | 0.364 |
-| Lover | 2019 | 18 | +0.581 | +0.067 | 0.441 |
-| Evermore | 2020 | 17 | +0.281 | +0.125 | 0.257 |
-| Folklore | 2020 | 17 | +0.303 | +0.042 | 0.311 |
-| Midnights | 2022 | 21 | +0.342 | +0.097 | 0.177 |
-| TTPD | 2024 | 31 | +0.082 | +0.076 | 0.115 |
-| Life of a Showgirl | 2025 | 12 | +0.520 | +0.125 | 0.289 |
+| Fearless | 2008 | 25 | +0.639 | +0.111 | 0.437 |
+| Speak Now | 2010 | 22 | +0.575 | +0.100 | 0.496 |
+| Red | 2012 | 28 | +0.795 | +0.125 | 0.276 |
+| 1989 | 2014 | 22 | +0.543 | +0.087 | 0.444 |
+| Reputation | 2017 | 15 | +0.574 | +0.068 | 0.472 |
+| Lover | 2019 | 18 | +0.599 | +0.075 | 0.385 |
+| Evermore | 2020 | 17 | +0.311 | +0.127 | 0.296 |
+| Folklore | 2020 | 17 | +0.307 | +0.049 | 0.347 |
+| Midnights | 2022 | 21 | +0.348 | +0.101 | 0.192 |
+| TTPD | 2024 | 31 | +0.058 | +0.075 | 0.133 |
+| Life of a Showgirl | 2025 | 12 | +0.507 | +0.128 | 0.347 |
 
 **Per-album reading (DistilBERT pos)**: speak Now (2010) has the highest
 mean (0.497), followed by 1989 (0.443) and Lover (0.441). TTPD (2024) is
@@ -79,17 +79,17 @@ Per-album bert_pos with standard error of the mean:
 | Album | n | mean | SEM | 95% CI |
 |-------|---|------|-----|--------|
 | Taylor Swift | 14 | 0.351 | ±0.124 | [0.107, 0.594] |
-| Fearless | 25 | 0.437 | ±0.098 | [0.244, 0.629] |
-| Speak Now | 22 | 0.497 | ±0.105 | [0.290, 0.703] |
-| Red | 28 | 0.309 | ±0.079 | [0.153, 0.465] |
-| 1989 | 22 | 0.443 | ±0.105 | [0.238, 0.648] |
-| Reputation | 15 | 0.364 | ±0.108 | [0.152, 0.576] |
-| Lover | 18 | 0.441 | ±0.105 | [0.235, 0.647] |
-| Evermore | 17 | 0.257 | ±0.103 | [0.055, 0.458] |
-| Folklore | 17 | 0.311 | ±0.108 | [0.100, 0.522] |
-| Midnights | 21 | 0.177 | ±0.075 | [0.030, 0.324] |
-| TTPD | 31 | 0.115 | ±0.050 | [0.016, 0.213] |
-| Life of a Showgirl | 12 | 0.289 | ±0.119 | [0.056, 0.522] |
+| Fearless | 25 | 0.437 | ±0.098 | [0.245, 0.628] |
+| Speak Now | 22 | 0.496 | ±0.105 | [0.290, 0.702] |
+| Red | 28 | 0.276 | ±0.075 | [0.129, 0.423] |
+| 1989 | 22 | 0.444 | ±0.105 | [0.238, 0.650] |
+| Reputation | 15 | 0.472 | ±0.120 | [0.238, 0.706] |
+| Lover | 18 | 0.385 | ±0.102 | [0.184, 0.586] |
+| Evermore | 17 | 0.296 | ±0.105 | [0.090, 0.502] |
+| Folklore | 17 | 0.347 | ±0.114 | [0.123, 0.572] |
+| Midnights | 21 | 0.192 | ±0.080 | [0.034, 0.349] |
+| TTPD | 31 | 0.133 | ±0.057 | [0.021, 0.244] |
+| Life of a Showgirl | 12 | 0.347 | ±0.114 | [0.125, 0.570] |
 
 **Time trend**: album means do NOT form a clean monotonic career arc.
 The early career (TSW-Fearless-Speak Now) sits at the top, then a dip
@@ -104,16 +104,16 @@ Top 10 disagreements (VADER strongly positive, DistilBERT strongly negative):
 
 | Song | Album | VADER | DistilBERT pos |
 |------|-------|-------|---------------|
+| August | Folklore | +1.00 | 0.00 |
 | Ruin The Friendship | Life of a Showgirl | +1.00 | 0.00 |
-| Snow On The Beach (Feat. More Lana Del Rey) | Midnights | +1.00 | 0.00 |
 | Question...? | Midnights | +1.00 | 0.00 |
+| The Prophecy | TTPD | +0.99 | 0.00 |
 | All Too Well (10 Minute Version) | Red | +1.00 | 0.00 |
 | Paris | Midnights | +1.00 | 0.00 |
-| The Prophecy | TTPD | +0.99 | 0.00 |
-| August | Folklore | +0.99 | 0.00 |
+| Snow On The Beach (Feat. More Lana Del Rey) | Midnights | +1.00 | 0.01 |
 | All You Had To Do Was Stay | 1989 | +0.99 | 0.00 |
-| Death By A Thousand Cuts | Lover | +0.99 | 0.00 |
-| I Can Fix Him (No Really I Can) | TTPD | +0.99 | 0.01 |
+| Glitch | Midnights | +0.99 | 0.00 |
+| Wi$H Li$T | Life of a Showgirl | +0.99 | 0.00 |
 
 These songs use positive lexicon words ('love', 'remember', 'kiss') but
 DistilBERT reads the surrounding context as heartbreak or loss. The
@@ -126,10 +126,10 @@ two models genuinely disagree about how to weigh surface vs. context.
 **Top 5 negative** (DistilBERT pos prob closest to 0):
 
 - `Illicit Affairs` (Folklore) — bert_pos=0.000
-- `Tell Me Why` (Fearless) — bert_pos=0.001
 - `Better Than Revenge` (Speak Now) — bert_pos=0.001
+- `Tell Me Why` (Fearless) — bert_pos=0.001
+- `This Is Me Trying` (Folklore) — bert_pos=0.001
 - `Picture To Burn` (Taylor Swift) — bert_pos=0.001
-- `'Tis The Damn Season` (Evermore) — bert_pos=0.001
 
 **Top 5 positive** (DistilBERT pos prob closest to 1):
 
@@ -137,13 +137,25 @@ two models genuinely disagree about how to weigh surface vs. context.
 - `Superman` (Speak Now) — bert_pos=0.999
 - `Mr. Perfectly Fine` (Fearless) — bert_pos=0.999
 - `The Best Day` (Fearless) — bert_pos=0.999
-- `You Are In Love` (1989) — bert_pos=0.999
+- `The Way I Loved You` (Fearless) — bert_pos=0.999
 
-**Caveat on extremes**: DistilBERT outputs near-binary probabilities
-(median 0.02, but the histogram is heavily concentrated near 0 and 1).
-Songs at 0.000 and 0.999 are not 'definitely' the most negative or positive
-— they're just the ones the model is most confident about. Many other
-songs sit in the middle and were assigned probabilities like 0.4-0.6.
+**Caveat on extremes**: DistilBERT's outputs are NEARLY BIMODAL on this
+corpus, not on a continuous scale:
+- 135/244 songs (55%) get bert_pos < 0.05 (model is confident negative)
+- 48/244 songs (20%) get bert_pos > 0.95 (model is confident positive)
+- Only 61/244 songs (25%) sit in the uncertain middle (0.1-0.9)
+
+The 'median 0.02' I previously cited wasn't quite right — it's not
+'mostly low with some highs', it's 'two peaks, one at 0 and one at 1'.
+Per-album means are therefore mostly a measure of the BALANCE between
+the two peaks: a mean of 0.50 could mean 50% confident-positive songs
+and 50% confident-negative songs, or it could mean all songs in the
+uncertain middle at exactly 0.5. The album mean can't tell us which.
+
+The 'top 5' and 'bottom 5' songs are songs the model is most confident
+about — not 'the most negative' or 'the most positive'. A song with
+bert_pos=0.000 isn't more negative than a song with bert_pos=0.001;
+both are confidently negative. The model just disagrees on degree.
 
 ## Reproducing
 
@@ -155,7 +167,7 @@ python analyze/sentiment.py
 
 Output files (gitignored, regenerable):
 - `reports/sentiment_per_song.csv` — 244 rows × 14 sentiment columns
-- `reports/sentiment_per_section.csv` — ~888 rows (one per song × tagged section)
+- `reports/sentiment_per_section.csv` — ~892 rows (one per song × tagged section)
 
 **Reproducibility note**: `data/fetch_cots.py` downloads CoTS from
 upstream's `main` branch HEAD. The CoTS Year column reports

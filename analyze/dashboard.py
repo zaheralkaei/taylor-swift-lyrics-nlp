@@ -94,6 +94,9 @@ def main() -> int:
         if r["Album"] not in seen:
             albums_in_order.append(r["Album"])
             seen.add(r["Album"])
+    # exclude "Other" bucket (n=2 non-album songs) from headline charts
+    if "Other" in albums_in_order:
+        albums_in_order.remove("Other")
 
     for album in albums_in_order:
         rs = [r for r in sent_songs if r["Album"] == album]

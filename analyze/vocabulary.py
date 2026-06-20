@@ -356,15 +356,37 @@ def main() -> int:
         L.append(f"**Lowest mean OEC rank (most common vocabulary)**: {ranked_by_complexity[-1][1]} (mean rank {ranked_by_complexity[-1][0]:.0f}).")
         L.append("")
         if mattr_rank:
-            L.append(f"**Highest MATTR-{args.mattr_window} (most within-song vocabulary diversity)**:")
+            L.append(f"**Highest MATTR-{args.mattr_window} (most within-song vocabulary diversity) — album-concat measure** (concatenate each album's lyrics, then compute MATTR):")
             for m, a in mattr_rank[:3]:
                 L.append(f"  {a} (MATTR={m:.3f})")
             L.append("")
-            L.append("Folklore, Evermore, TTPD, and Life of a Showgirl cluster at")
-            L.append("the high-MATTR end — the post-2020 albums use more varied words")
-            L.append("within each song. 1989 and Reputation are at the low-MATTR end —")
-            L.append("more repetitive vocabulary within songs (consistent with pop-hook")
-            L.append("form, where repeated phrases are a feature).")
+            L.append("**Same ranking by per-song mean MATTR (used in the dashboard chart 2)**:")
+            L.append("(compute MATTR for each song, then average per album)")
+            L.append("")
+            # per-song mean MATTR is the same data that's in the CSV
+            per_song = []
+            mattr_col = f"MATTR_{args.mattr_window}"
+            for a in real_albums:
+                vals = [float(r[mattr_col]) for r in per_song_rows
+                        if r["Album"] == a and r.get(mattr_col) is not None]
+                if vals:
+                    per_song.append((sum(vals)/len(vals), a, len(vals)))
+            per_song.sort(reverse=True)
+            for m, a, n in per_song[:5]:
+                L.append(f"  {a} (mean MATTR={m:.3f}, n={n})")
+            L.append("")
+            L.append("**Important caveat**: the two measures tell slightly different stories.")
+            L.append("Album-concat MATTR weights long songs more (concatenation gives them more")
+            L.append("tokens to look at). Per-song-mean MATTR weights songs equally regardless")
+            L.append("of length. Both agree on the top album (TTPD) and the bottom (1989 /")
+            L.append("Reputation), but the mid-rankings differ.")
+            L.append("")
+            L.append(f"**Note on MATTR-{args.mattr_window} and this corpus**: 93% of songs have")
+            L.append(f"fewer than {args.mattr_window} words. For these short songs the function")
+            L.append("falls back to plain TTR (type-token ratio = unique words / total words).")
+            L.append("So 'MATTR-500' on this corpus is mostly measuring whole-song TTR, not the")
+            L.append("moving-average behaviour the name suggests. A smaller window (e.g. 100)")
+            L.append("would give a more meaningful MATTR signal but loses length normalisation.")
         L.append("")
         # combined with phase 2 — use the actual current ranking, not hardcoded.
         # Read sentiment_per_song.csv if available.
