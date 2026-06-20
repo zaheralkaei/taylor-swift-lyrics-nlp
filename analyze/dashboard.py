@@ -343,7 +343,7 @@ a { color: #2ca02c; }
 <div class="section">
   <h2>1. Career-long sentiment arc</h2>
   <p>Each point is a song. DistilBERT-SST2 positive probability — pretrained sentiment model, transferred to lyrics. Hover for song title and scores.</p>
-  <p><b>Headline:</b> Late-2000s/2010s confidence peak (Speak Now 0.50, 1989 0.44, Lover 0.44) → 2020-2021 indie introspection (Evermore 0.26, Folklore 0.31) → 2022-2024 breakup reckoning (Midnights 0.18, TTPD 0.12).</p>
+  <p><b>Headline (descriptive):</b> Speak Now (2010) and 1989 (2014) average highest on DistilBERT pos; TTPD (2024) and Midnights (2022) lowest. The 'late-career breakup reckoning' interpretation is one reading of the data; the same shape is also consistent with 'slower songs get lower pos scores' or 'the model is more confident on short, hook-heavy lyrics.' Year axis uses canonical original-release years from album_meta.json (CoTS's year column reports Taylor's Version re-release years for Fearless/Red/1989/Speak Now).</p>
 """]
     html_parts.append(fig1.to_html(full_html=False, include_plotlyjs="cdn", div_id="chart1"))
     html_parts.append("</div>")
@@ -352,7 +352,7 @@ a { color: #2ca02c; }
 <div class="section">
   <h2>2. Sentiment vs lexical diversity per album</h2>
   <p>Album-level mean DistilBERT pos (y) vs album-level mean MATTR-500 (x). MATTR-500 is moving-average type-token ratio — measures within-song vocabulary diversity, stable across song lengths.</p>
-  <p><b>Headline:</b> TTPD is the bottom-right outlier — most lexically diverse AND most negative. The Tortured Poets Department is the most linguistically and emotionally complex album.</p>
+  <p><b>Headline (descriptive, not causal):</b> TTPD sits at the bottom-right (lowest DistilBERT pos + highest MATTR-500). Whether this is 'most linguistically and emotionally complex' is a value judgment, not a measurement — the chart only shows the relative position. Sample sizes per album are 12-31 songs; per-album means have standard errors of ~0.05-0.08 on the bert_pos scale.</p>
 """)
     html_parts.append(fig2.to_html(full_html=False, include_plotlyjs=False, div_id="chart2"))
     html_parts.append("</div>")
@@ -376,9 +376,9 @@ a { color: #2ca02c; }
     if vibes_rows:
         html_parts.append("""
 <div class="section">
-  <h2>5. Vibe clusters (phase 6)</h2>
-  <p>K-means (K=10) on the 384-dim sentence embeddings. Each cluster shows which albums its songs come from. Cross-album clusters = shared lyrical themes across eras.</p>
-  <p><b>Headline:</b> 86% of songs have a nearest neighbor from a different album. Swift draws on a shared lyrical pool across eras. Within-album cluster consistency is highest for TTPD (97%), lowest for Life of a Showgirl (67%).</p>
+  <h2>5. Vibe clusters (phase 6a — K-means)</h2>
+  <p>K-means (K=10) on the 384-dim sentence embeddings. Each cluster shows which albums its songs come from.</p>
+  <p><b>Headline:</b> 86% of songs have a nearest neighbor from a different album. Multiple explanations are possible (genuine theme sharing, common-English function words dominating the embedding, model limitations) — see the cross-album caveat in <code>reports/similarity_summary.md</code>. Within-album cluster consistency (how often a song's cluster-mates are from the same album) is highest for TTPD (97%), lowest for Life of a Showgirl (67%).</p>
 """)
         html_parts.append(fig4.to_html(full_html=False, include_plotlyjs=False, div_id="chart4"))
         html_parts.append("</div>")

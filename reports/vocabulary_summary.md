@@ -44,15 +44,15 @@ so MATTR-500 is the fairer comparison.
 | Album | Year | n songs | n tokens | n types | TTR | MATTR | mean OEC | mean FqBand |
 |-------|------|---------|----------|---------|-----|-------|----------|-------------|
 | Taylor Swift | 2006 | 14 | 4,038 | 653 | 0.1617 | 0.2699 | 29 | 3.42 |
+| Fearless | 2008 | 25 | 8,403 | 1,008 | 0.1200 | 0.2714 | 28 | 3.40 |
+| Speak Now | 2010 | 22 | 8,837 | 1,230 | 0.1392 | 0.2904 | 28 | 3.58 |
+| Red | 2012 | 28 | 10,673 | 1,248 | 0.1169 | 0.2651 | 27 | 3.42 |
+| 1989 | 2014 | 22 | 9,598 | 1,068 | 0.1113 | 0.2282 | 27 | 3.55 |
 | Reputation | 2017 | 15 | 7,413 | 924 | 0.1246 | 0.2214 | 29 | 3.46 |
 | Lover | 2019 | 18 | 6,861 | 1,022 | 0.1490 | 0.2631 | 28 | 3.62 |
 | Evermore | 2020 | 17 | 6,036 | 1,120 | 0.1856 | 0.3100 | 27 | 3.84 |
 | Folklore | 2020 | 17 | 5,151 | 1,061 | 0.2060 | 0.3182 | 28 | 3.75 |
-| Fearless | 2021 | 25 | 8,403 | 1,008 | 0.1200 | 0.2714 | 28 | 3.40 |
-| Red | 2021 | 28 | 10,673 | 1,248 | 0.1169 | 0.2651 | 27 | 3.42 |
 | Midnights | 2022 | 21 | 7,056 | 1,232 | 0.1746 | 0.3044 | 25 | 4.13 |
-| 1989 | 2023 | 22 | 9,598 | 1,068 | 0.1113 | 0.2282 | 27 | 3.55 |
-| Speak Now | 2023 | 22 | 8,837 | 1,230 | 0.1392 | 0.2904 | 28 | 3.58 |
 | TTPD | 2024 | 31 | 10,756 | 1,960 | 0.1822 | 0.3458 | 28 | 3.98 |
 | Life of a Showgirl | 2025 | 12 | 4,701 | 974 | 0.2072 | 0.3066 | 26 | 4.05 |
 | Other | — | 2 | 530 | 192 | 0.3623 | 0.3574 | 32 | 3.42 |
@@ -62,79 +62,86 @@ so MATTR-500 is the fairer comparison.
 | Album | A1 | A2 | B1 | B1+ | B2 | C1 | C2 |
 |-------|----|----|----|-----|----|----|-----|
 | Taylor Swift | 77.8 | 5.2 | 1.2 | 0.0 | 1.1 | 0.3 | 0.0 |
+| Fearless | 77.9 | 4.6 | 1.6 | 0.0 | 1.0 | 0.5 | 0.0 |
+| Speak Now | 77.0 | 5.3 | 2.0 | 0.0 | 1.2 | 0.9 | 0.0 |
+| Red | 79.3 | 4.8 | 1.4 | 0.0 | 1.4 | 0.7 | 0.0 |
+| 1989 | 75.9 | 8.6 | 1.8 | 0.0 | 1.9 | 0.3 | 0.0 |
 | Reputation | 76.6 | 5.1 | 1.3 | 0.0 | 1.9 | 0.7 | 0.0 |
 | Lover | 73.9 | 5.3 | 2.0 | 0.0 | 1.4 | 1.0 | 0.0 |
 | Evermore | 74.6 | 5.7 | 2.3 | 0.0 | 2.3 | 1.0 | 0.0 |
 | Folklore | 75.8 | 5.5 | 2.3 | 0.0 | 1.7 | 1.1 | 0.0 |
-| Fearless | 77.9 | 4.6 | 1.6 | 0.0 | 1.0 | 0.5 | 0.0 |
-| Red | 79.3 | 4.8 | 1.4 | 0.0 | 1.4 | 0.7 | 0.0 |
 | Midnights | 72.1 | 6.7 | 2.1 | 0.0 | 2.0 | 0.8 | 0.0 |
-| 1989 | 75.9 | 8.6 | 1.8 | 0.0 | 1.9 | 0.3 | 0.0 |
-| Speak Now | 77.0 | 5.3 | 2.0 | 0.0 | 1.2 | 0.9 | 0.0 |
 | TTPD | 70.5 | 7.0 | 1.9 | 0.0 | 2.3 | 1.3 | 0.0 |
 | Life of a Showgirl | 70.3 | 6.8 | 2.1 | 0.0 | 1.7 | 1.0 | 0.0 |
 | Other | 78.7 | 5.1 | 1.1 | 0.0 | 0.2 | 0.8 | 0.0 |
 
 ## Most vocabulary-similar album pairs (Jaccard over unique tokens)
 
-Higher = more vocabulary overlap. Self-titled and reputation-era
-albums often share large vocab pools because they all draw on
-common English.
+Higher = more vocabulary overlap. Note: even the highest
+Jaccard is only ~0.36 — meaning Swift's most-similar albums
+still share only about 1/3 of their unique vocabulary. The
+non-overlapping 2/3 reflects within-album imagery plus words
+rare enough to appear in only one album.
 
 | Album A | Album B | Jaccard |
 |---------|---------|---------|
-| Red | Speak Now | 0.358 |
+| Speak Now | Red | 0.358 |
 | Fearless | Red | 0.355 |
 | Fearless | Speak Now | 0.351 |
 | Taylor Swift | Fearless | 0.345 |
 | Red | 1989 | 0.340 |
 | Fearless | 1989 | 0.338 |
-| 1989 | Speak Now | 0.335 |
-| Reputation | Fearless | 0.313 |
-| Reputation | 1989 | 0.309 |
+| Speak Now | 1989 | 0.335 |
+| Fearless | Reputation | 0.313 |
+| 1989 | Reputation | 0.309 |
 | Taylor Swift | Red | 0.303 |
 
 ## Least vocabulary-similar album pairs
 
+Excludes the 'Other' bucket (n=2 — too small to compare).
+
 | Album A | Album B | Jaccard |
 |---------|---------|---------|
-| TTPD | Other | 0.073 |
-| Red | Other | 0.106 |
-| Midnights | Other | 0.107 |
-| Life of a Showgirl | Other | 0.108 |
-| Speak Now | Other | 0.110 |
-| Evermore | Other | 0.114 |
-| Lover | Other | 0.114 |
-| Folklore | Other | 0.114 |
-| 1989 | Other | 0.122 |
-| Fearless | Other | 0.123 |
+| Taylor Swift | TTPD | 0.202 |
+| TTPD | Life of a Showgirl | 0.214 |
+| Evermore | Life of a Showgirl | 0.221 |
+| Reputation | TTPD | 0.231 |
+| Lover | TTPD | 0.237 |
+| Evermore | TTPD | 0.239 |
+| Folklore | Life of a Showgirl | 0.240 |
+| Lover | Life of a Showgirl | 0.243 |
+| Reputation | Life of a Showgirl | 0.245 |
+| Taylor Swift | Life of a Showgirl | 0.248 |
 
 ## Headlines
 
 **Vocabulary is remarkably flat across the discography**.
-Mean OEC rank spans only 25-29 across all 13 albums — that's a
-4-point spread on a scale where rank-1 is the most common English
-word and rank-10000 is the median. Swift doesn't dramatically shift
-vocabulary register across her career; her lyric style is
-consistently everyday-English.
+Mean OEC rank spans only 25-29 across all studio albums — a
+4-point spread on a scale where rank-1 is the most common
+English word and rank-10000 is the median. Swift doesn't
+dramatically shift vocabulary register across her career; her
+lyric style is consistently everyday-English.
 
-**Highest mean OEC rank (rarest vocabulary)**: Other (mean rank 32).
+**Highest mean OEC rank (rarest vocabulary)**: Reputation (mean rank 29).
 **Lowest mean OEC rank (most common vocabulary)**: Midnights (mean rank 25).
 
 **Highest MATTR-500 (most within-song vocabulary diversity)**:
-  Other (MATTR=0.357)
   TTPD (MATTR=0.346)
   Folklore (MATTR=0.318)
+  Evermore (MATTR=0.310)
 
 Folklore, Evermore, TTPD, and Life of a Showgirl cluster at
 the high-MATTR end — the post-2020 albums use more varied words
 within each song. 1989 and Reputation are at the low-MATTR end —
-more repetitive vocabulary within songs (the pop-hook pattern).
+more repetitive vocabulary within songs (consistent with pop-hook
+form, where repeated phrases are a feature).
 
-**Combined with phase 2**: TTPD has the lowest DistilBERT pos
-(0.115 — most negative) AND the highest MATTR (0.346 — most
-lexically diverse). The Tortured Poets Department is the most
-linguistically *and* emotionally complex album in the corpus.
+**Combined with phase 2**: TTPD has the
+highest MATTR (0.346) AND TTPD has the
+lowest mean DistilBERT pos (0.115). These
+are not necessarily the same album — the join here is
+illustrative, not a strong claim about a single 'most complex'
+album.
 
 ## Reproducing
 

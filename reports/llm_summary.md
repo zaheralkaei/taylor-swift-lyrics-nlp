@@ -44,6 +44,20 @@ Most common vibe tags per album (top 8 each).
 | Should've Said No | Taylor Swift | Taylor Swift reflects on a regretful past relationship, questioning if she made the right choice. | Contemporary Pop, Heartbreak, Reflection |
 | Mary's Song (Oh My My My) | Taylor Swift | Romantic reminiscence of a young couple's first love affair. | Heartfelt, Retro, Love |
 
+## Honest caveats
+
+- The model is qwen2.5:3b (3.1B params, q4_K_M), a small general-purpose
+  chat model. Outputs are plausible but not authoritative.
+- One song (Shake It Off, 1989) returned Chinese-character vibe tokens
+  in an English prompt — a sampling artifact. The summary was still English.
+- 'Other' bucket has only 2 songs; the per-album vibe word cloud for
+  'Other' is noise and not interpretable.
+
+- The Year column was wrong for 4 albums in the previous version of this
+  table (Fearless 2008, Red 2012, 1989 2014, Speak Now 2010 — but CoTS
+  reported the Taylor's Version re-release years 2021, 2021, 2023, 2023).
+  build_pipeline.py now prefers album_meta.json's canonical years.
+
 ## Failed parses
 
 None.

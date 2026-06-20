@@ -17,6 +17,15 @@ removed because the model is trained on short-form reviews/dialogue
 and produces near-uniform distributions on abstract lyrical text —
 not a reliable signal. DistilBERT transfers well to lyrics.
 
+**Honest framing**: sentiment analysis on lyrics is fundamentally hard.
+Songs use metaphor, negation reversals, and quoted irony (e.g.
+'I knew you were trouble when you walked in' — negative words
+expressing a complex non-negative feeling). The pretrained DistilBERT
+model was fine-tuned on SST-2 (movie reviews), not lyrics; its
+output is a 'positive/negative' score relative to that training
+distribution. We treat it as a useful relative signal across songs,
+not a ground-truth emotional reading.
+
 ## Overall sentiment (244 songs)
 
 | Model | Mean | Median | Min | Max |
@@ -33,8 +42,9 @@ calibrated, with values clustered around zero.
 
 ## Per-album sentiment
 
-Albums ordered by release year. Year column comes from CoTS upstream;
-the OTH (non-album) bucket has no year.
+Albums ordered by canonical original-release year (album_meta.json).
+The 'Other' bucket has only 2 non-album songs and is excluded from
+trend interpretation; statistical power is too low.
 
 | Album | Year | n | VADER | TextBlob | DistilBERT pos |
 |-------|------|---|-------|----------|---------------|
@@ -50,24 +60,28 @@ the OTH (non-album) bucket has no year.
 | Midnights | 2022 | 21 | +0.342 | +0.097 | 0.177 |
 | TTPD | 2024 | 31 | +0.082 | +0.076 | 0.115 |
 | Life of a Showgirl | 2025 | 12 | +0.520 | +0.125 | 0.289 |
-| Other | — | 2 | -0.779 | +0.047 | 0.369 |
 
-**Per-album reading (DistilBERT pos)**: Speak Now (2010) tops the
-positivity ranking, followed by 1989 and Lover — all three are her
-most self-affirming studio albums. Fearless and Taylor Swift are
-also high. From Midnights (2022) onward, DistilBERT pos drops
-sharply: Midnights (0.18), TTPD (0.12) — both heavily breakup-
-themed. Reputation and Red sit in the middle, with their mix of
-vengeance and heartbreak. Folklore (0.31) and Evermore (0.26) are
-lower than peak-pop but higher than the post-2022 albums — the
-indie-folk pivot was darker than pop, but not as relentlessly
-heartbroken as the 2022-onwards material.
+**Per-album reading (DistilBERT pos)**: speak Now (2010) has the highest
+mean (0.497), followed by 1989 (0.443) and Lover (0.441). TTPD (2024) is
+lowest (0.115), with Midnights (2022) second-lowest (0.177).
 
-This is a coherent arc: late-2010s confidence → 2020-2021 indie
-introspection → 2022-2024 breakup reckoning.
+**Caveat**: this ranking comes from album means of 12-31 song-level
+predictions each. With these sample sizes, the standard error of the
+mean is roughly ±0.05-0.08 on the bert_pos scale. Differences of less than
+~0.1 between adjacent albums are not statistically meaningful from this
+sample. The big gap between the top (Speak Now 0.50) and bottom (TTPD 0.12)
+is real; smaller re-orderings within the middle of the ranking are not.
+
+**Time trend**: album means do NOT form a clean monotonic career arc.
+The early career (TSW-Fearless-Speak Now) sits at the top, then a dip
+at Red, recovery through Reputation-Lover, dip again into Folklore-Evermore,
+and a steep fall from Midnights onward. Any narrative ('the breakup reckoning')
+is a plausible interpretation but not the only one — the data is also
+consistent with 'slower songs get lower pos scores' regardless of subject.
+
 ## Where VADER and DistilBERT disagree most
 
-Top 10 disagreements (VADER positive, DistilBERT negative):
+Top 10 disagreements (VADER strongly positive, DistilBERT strongly negative):
 
 | Song | Album | VADER | DistilBERT pos |
 |------|-------|-------|---------------|
@@ -82,9 +96,11 @@ Top 10 disagreements (VADER positive, DistilBERT negative):
 | Death By A Thousand Cuts | Lover | +0.99 | 0.00 |
 | I Can Fix Him (No Really I Can) | TTPD | +0.99 | 0.01 |
 
-These songs use positive lexicon words (love, remember, kiss) but
+These songs use positive lexicon words ('love', 'remember', 'kiss') but
 DistilBERT reads the surrounding context as heartbreak or loss. The
-neural model picks up what the lexicon cannot.
+neural model picks up what the lexicon cannot — but neither model's
+interpretation is the 'true' emotion. Treat these as cases where the
+two models genuinely disagree about how to weigh surface vs. context.
 
 ## Most positive and most negative songs (DistilBERT)
 
@@ -104,6 +120,12 @@ neural model picks up what the lexicon cannot.
 - `The Best Day` (Fearless) — bert_pos=0.999
 - `You Are In Love` (1989) — bert_pos=0.999
 
+**Caveat on extremes**: DistilBERT outputs near-binary probabilities
+(median 0.02, but the histogram is heavily concentrated near 0 and 1).
+Songs at 0.000 and 0.999 are not 'definitely' the most negative or positive
+— they're just the ones the model is most confident about. Many other
+songs sit in the middle and were assigned probabilities like 0.4-0.6.
+
 ## Reproducing
 
 ```bash
@@ -113,11 +135,12 @@ python analyze/sentiment.py
 ```
 
 Output files (gitignored, regenerable):
-- `reports/sentiment_per_song.csv` — 244 rows × 14 sentiment columns (VADER + TextBlob + DistilBERT)
+- `reports/sentiment_per_song.csv` — 244 rows × 14 sentiment columns
 - `reports/sentiment_per_section.csv` — 717 rows (one per song × section)
-- `reports/sentiment_summary.md` — this file
 
 **Reproducibility note**: `data/fetch_cots.py` downloads CoTS from
-upstream's `main` branch HEAD. If the upstream corpus changes,
-results will silently differ. For paper-grade reproducibility, pin
-to a specific commit SHA + add a SHA256 check.
+upstream's `main` branch HEAD. The CoTS Year column reports
+Taylor's Version re-release years for Fearless, Red, 1989, and Speak
+Now — `data/build_pipeline.py` now prefers album_meta.json year to
+avoid this. For paper-grade reproducibility, pin CoTS to a specific
+commit SHA + add a SHA256 check.

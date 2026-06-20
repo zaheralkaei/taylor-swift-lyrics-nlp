@@ -39,8 +39,9 @@ Mutual pairs are stronger evidence of similarity than one-way matches.
 ## Most 'interchangeable' songs (highest mean similarity to top-5)
 
 Songs whose lyrics are most similar to other songs on average.
-Often: covers, vault tracks that mirror their album, or songs that
-share heavy lyrical templates (e.g., breakup songs).
+(Heuristic label — high mean similarity to top-5 could reflect
+shared function words, shared imagery, or genuine thematic
+overlap. Don't over-read.)
 
 | Song | Album | Year | mean sim to top-5 |
 |------|-------|------|--------------------|
@@ -62,7 +63,9 @@ share heavy lyrical templates (e.g., breakup songs).
 
 ## Most 'distinctive' songs (lowest mean similarity to top-5)
 
-Songs whose lyrics are unlike anything else in the corpus.
+Songs with the lowest mean similarity to their top-5 neighbors.
+(Heuristic label — could reflect idiosyncratic imagery OR
+shorter lyric length, OR no direct matches in this corpus.)
 
 | Song | Album | Year | mean sim to top-5 |
 |------|-------|------|--------------------|
@@ -85,9 +88,17 @@ Songs whose lyrics are unlike anything else in the corpus.
 ## Cross-album similarity
 
 Of 244 songs, **210** (86%) have their nearest
-neighbor from a *different* album. High cross-album similarity
-suggests Swift draws on a shared lyrical pool across eras —
-a song on Folklore can be closest to a song on 1989, etc.
+neighbor from a *different* album; 34 (14%) from the same album.
+
+**Caveat on the 'shared lyrical pool' interpretation**: this 86%
+figure is consistent with at least three explanations:
+(1) Swift genuinely reuses lyrical themes across albums (the story we
+want to tell); (2) most songs share a large common-English core of
+function words ('the', 'I', 'you', 'love', 'know', 'never') that
+dominates the embedding; (3) the embedding model (all-MiniLM-L6-v2,
+trained on web text) flattens fine-grained imagery. Without a control
+comparison (e.g. similarity scores for shuffled or random texts),
+we cannot say which explanation dominates.
 
 ## Per-album average centroid similarity
 
