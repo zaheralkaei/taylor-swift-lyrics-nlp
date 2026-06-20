@@ -246,6 +246,34 @@ def main() -> int:
         L.append("None.")
     L.append("")
 
+    # non-Latin content detection (script-generated)
+    L.append("## Honest caveats")
+    L.append("")
+    L.append(f"- The model is {args.model} (q4_K_M), a small general-purpose")
+    L.append("  chat model. Outputs are plausible but not authoritative.")
+    non_latin_summary = [r for r in ok_rows
+                         if any(0x3000 <= ord(c) <= 0x9FFF or 0x0400 <= ord(c) <= 0x04FF
+                                for c in r["summary"])]
+    non_latin_vibe = [r for r in ok_rows
+                      if any(0x3000 <= ord(c) <= 0x9FFF or 0x0400 <= ord(c) <= 0x04FF
+                             for c in r["vibe"])]
+    if non_latin_summary:
+        names = ", ".join(f"**{r['Title']}** ({r['Album']})" for r in non_latin_summary)
+        L.append(f"- {len(non_latin_summary)} song(s) returned a non-Latin summary that")
+        L.append(f"  may be unusable for English readers: {names}.")
+    if non_latin_vibe:
+        names = ", ".join(f"**{r['Title']}** ({r['Album']})" for r in non_latin_vibe)
+        L.append(f"- {len(non_latin_vibe)} song(s) had non-Latin tokens in the vibe")
+        L.append(f"  field (sampling artifact at temperature=0.3): {names}.")
+    L.append("- 'Other' bucket has only 2 songs; the per-album vibe word cloud for")
+    L.append("  'Other' is noise and not interpretable.")
+    L.append("")
+    L.append("- The Year column was wrong for 4 albums in the previous version of this")
+    L.append("  table (Fearless 2008, Red 2012, 1989 2014, Speak Now 2010 — but CoTS")
+    L.append("  reported the Taylor's Version re-release years 2021, 2021, 2023, 2023).")
+    L.append("  build_pipeline.py now prefers album_meta.json's canonical years.")
+    L.append("")
+
     L.append("## Reproducing")
     L.append("")
     L.append("```bash")

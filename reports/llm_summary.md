@@ -48,8 +48,11 @@ Most common vibe tags per album (top 8 each).
 
 - The model is qwen2.5:3b (3.1B params, q4_K_M), a small general-purpose
   chat model. Outputs are plausible but not authoritative.
-- One song (Shake It Off, 1989) returned Chinese-character vibe tokens
-  in an English prompt — a sampling artifact. The summary was still English.
+- 1 song (Haunted, Speak Now) returned a fully Japanese summary that
+  may be unusable for English readers. The vibe field was still English
+  ("Sad, Pop, Heartbreak"). Sampling artifact at temperature=0.3.
+- 1 song (Shake It Off, 1989) had non-Latin (Chinese) tokens in the
+  vibe field ("Pop,自信,动感,励志,节奏"). The summary was still English.
 - 'Other' bucket has only 2 songs; the per-album vibe word cloud for
   'Other' is noise and not interpretable.
 
