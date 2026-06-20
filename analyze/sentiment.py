@@ -56,9 +56,15 @@ SECTION_GROUPS = {
 
 
 def clean_for_sentiment(text: str) -> str:
-    """Strip section markers and bracketed annotations for sentiment analysis."""
+    """Strip structural markers for sentiment analysis.
+
+    Drops bracketed structural labels like [Verse], [Bridge], [Spoken] (these
+    are CoTS metadata, not sung lyrics). Keeps parenthesised vocalisations
+    like (Ah-ah-ah), (Hey, hey, hey) — these are sung content, not metadata,
+    and dropping them silently wipes intros for songs whose intro is purely
+    vocalisation (e.g. Castles Crumbling, Invisible String).
+    """
     text = re.sub(r"\[.*?\]", " ", text)
-    text = re.sub(r"\(.*?\)", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
